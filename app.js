@@ -22,6 +22,13 @@ const copy = {
     emailSending: "Emailing your choices to the organiser…",
     emailSent: "Your choices have been emailed to the organiser.",
     emailFailed: "We couldn’t send your choices. Please try again.",
+    emailApiUrlMissing: "The email API URL is missing. Set this page’s survey-api-base-url to your Render service URL.",
+    emailOriginRejected: "Render rejected this website’s origin. Set FRONTEND_ORIGIN to your GitHub Pages origin.",
+    emailServerNotConfigured: "Render is missing the SMTP environment variables needed to send email.",
+    emailSmtpFailed: "Render received your choices but could not send the email. Check its logs and SMTP settings.",
+    emailBadSubmission: "The API rejected these choices. Check that GitHub Pages and Render are using matching app versions.",
+    emailApiUnreachable: "The email API could not be reached. Check the Render URL and CORS settings.",
+    emailHttpError: "The email API returned HTTP {status}. Check the Render logs.",
     emailRetry: "Try email again",
     restart: "Start again",
     selectError: "Choose an answer to continue.",
@@ -79,6 +86,13 @@ const copy = {
     emailSending: "Jūsų pasirinkimai siunčiami organizatoriui el. paštu…",
     emailSent: "Jūsų pasirinkimai išsiųsti organizatoriui el. paštu.",
     emailFailed: "Nepavyko išsiųsti pasirinkimų. Bandykite dar kartą.",
+    emailApiUrlMissing: "Nenurodytas el. pašto API adresas. Nustatykite survey-api-base-url į savo Render paslaugos adresą.",
+    emailOriginRejected: "Render atmetė šios svetainės kilmės adresą. Nustatykite FRONTEND_ORIGIN į savo GitHub Pages adresą.",
+    emailServerNotConfigured: "Render trūksta el. pašto siuntimui būtinų SMTP aplinkos kintamųjų.",
+    emailSmtpFailed: "Render gavo jūsų pasirinkimus, bet nepavyko išsiųsti el. laiško. Patikrinkite žurnalus ir SMTP nustatymus.",
+    emailBadSubmission: "API atmetė šiuos pasirinkimus. Patikrinkite, ar GitHub Pages ir Render naudoja suderintas programos versijas.",
+    emailApiUnreachable: "Nepavyko pasiekti el. pašto API. Patikrinkite Render adresą ir CORS nustatymus.",
+    emailHttpError: "El. pašto API grąžino HTTP {status} klaidą. Patikrinkite Render žurnalus.",
     emailRetry: "Siųsti dar kartą",
     restart: "Pradėti iš naujo",
     selectError: "Norėdami tęsti, pasirinkite atsakymą.",
@@ -121,7 +135,7 @@ const paths = {
   draughts: 2
 };
 
-const state = { language: "en", step: 0, answers: [], emailStatus: "idle" };
+const state = { language: "en", step: 0, answers: [], emailStatus: "idle", emailFailureKey: null, emailFailureStatus: null };
 const apiBaseUrl = document.querySelector('meta[name="survey-api-base-url"]').content.trim().replace(/\/$/, "");
 const form = document.querySelector("#survey-form");
 const answerList = document.querySelector("#answer-list");
@@ -252,11 +266,14 @@ function renderCompletion() {
 }
 
 function renderEmailStatus() {
+  const failedText = state.emailFailureKey === "emailHttpError"
+    ? currentCopy().emailHttpError.replace("{status}", String(state.emailFailureStatus))
+    : currentCopy()[state.emailFailureKey] || currentCopy().emailFailed;
   const statusText = {
     idle: "",
     sending: currentCopy().emailSending,
     sent: currentCopy().emailSent,
-    failed: currentCopy().emailFailed
+    failed: failedText
   };
   document.querySelector("#email-status").textContent = statusText[state.emailStatus];
   document.querySelector("#email-retry").hidden = state.emailStatus !== "failed";
@@ -265,8 +282,16 @@ function renderEmailStatus() {
 async function sendSurveyEmail() {
   if (state.emailStatus === "sending" || state.emailStatus === "sent") return;
   state.emailStatus = "sending";
+  state.emailFailureKey = null;
+  state.emailFailureStatus = null;
   renderEmailStatus();
   try {
+    if (!apiBaseUrl && location.hostname.endsWith("github.io")) {
+      state.emailFailureKey = "emailApiUrlMissing";
+      state.emailStatus = "failed";
+      renderEmailStatus();
+      return;
+    }
     const response = await fetch(`${apiBaseUrl}/api/submissions`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -277,10 +302,24 @@ async function sendSurveyEmail() {
         timing: state.answers[2].key
       })
     });
-    if (!response.ok) throw new Error("Email submission failed");
+    if (!response.ok) {
+      state.emailFailureKey = {
+        400: "emailBadSubmission",
+        403: "emailOriginRejected",
+        404: "emailApiUrlMissing",
+        405: "emailApiUrlMissing",
+        502: "emailSmtpFailed",
+        503: "emailServerNotConfigured"
+      }[response.status] || "emailHttpError";
+      state.emailFailureStatus = response.status;
+      state.emailStatus = "failed";
+      renderEmailStatus();
+      return;
+    }
     state.emailStatus = "sent";
   } catch {
     state.emailStatus = "failed";
+    state.emailFailureKey = "emailApiUnreachable";
   }
   renderEmailStatus();
 }
@@ -324,6 +363,8 @@ document.querySelector("#restart-button").addEventListener("click", () => {
   state.step = 0;
   state.answers = [];
   state.emailStatus = "idle";
+  state.emailFailureKey = null;
+  state.emailFailureStatus = null;
   showSurvey();
 });
 
