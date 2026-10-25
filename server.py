@@ -180,6 +180,25 @@ def send_submission(payload: Any) -> None:
         smtp.send_message(message)
 
 
+def smtp_failure_diagnostics(error: OSError | smtplib.SMTPException) -> tuple[str, str, int | None]:
+    smtp_code = getattr(error, "smtp_code", None)
+    if isinstance(error, smtplib.SMTPAuthenticationError):
+        return "smtp_authentication_rejected", "SMTP authentication was rejected.", smtp_code
+    if isinstance(error, smtplib.SMTPSenderRefused):
+        return "smtp_sender_rejected", "The SMTP server rejected the configured sender address.", smtp_code
+    if isinstance(error, smtplib.SMTPRecipientsRefused):
+        return "smtp_recipient_rejected", "The SMTP server rejected the configured recipient address.", None
+    if isinstance(error, smtplib.SMTPNotSupportedError):
+        return "smtp_feature_unsupported", "The SMTP server does not support the requested authentication or TLS mode.", None
+    if isinstance(error, smtplib.SMTPConnectError):
+        return "smtp_connection_rejected", "The SMTP server rejected the connection.", smtp_code
+    if isinstance(error, smtplib.SMTPServerDisconnected):
+        return "smtp_disconnected", "The SMTP server closed the connection before delivery completed.", None
+    if isinstance(error, (TimeoutError, OSError)):
+        return "smtp_connection_failed", "Could not connect to the SMTP server. Check host, port, TLS settings, and outbound SMTP access.", None
+    return "smtp_delivery_rejected", "The SMTP server rejected delivery. Check provider requirements and sender authorization.", smtp_code
+
+
 def is_rate_limited(client_ip: str) -> bool:
     now = time.monotonic()
     with REQUESTS_LOCK:
@@ -265,9 +284,10 @@ def submit_survey():
             missing_variables=error.missing_variables,
             invalid_variables=error.invalid_variables,
         ), 503
-    except (OSError, smtplib.SMTPException):
-        app.logger.exception("Survey email delivery failed")
-        return jsonify(error="Email delivery failed"), 502
+    except (OSError, smtplib.SMTPException) as error:
+        error_code, details, smtp_code = smtp_failure_diagnostics(error)
+        app.logger.warning("Survey email delivery failed: category=%s smtp_code=%s", error_code, smtp_code)
+        return jsonify(error="Email delivery failed", error_code=error_code, details=details, smtp_code=smtp_code), 502
 
     return jsonify(status="sent"), 200
 
