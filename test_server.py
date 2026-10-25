@@ -92,6 +92,11 @@ class SurveyEmailTests(unittest.TestCase):
                 "/api/submissions",
                 headers={"Origin": "https://example.github.io"},
             )
+            same_origin = app.test_client().options(
+                "/api/submissions",
+                base_url="https://survey.onrender.com",
+                headers={"Origin": "https://survey.onrender.com"},
+            )
             rejected = app.test_client().options(
                 "/api/submissions",
                 headers={"Origin": "https://other.example"},
@@ -99,6 +104,8 @@ class SurveyEmailTests(unittest.TestCase):
 
         self.assertEqual(allowed.status_code, 204)
         self.assertEqual(allowed.headers["Access-Control-Allow-Origin"], "https://example.github.io")
+        self.assertEqual(same_origin.status_code, 204)
+        self.assertEqual(same_origin.headers["Access-Control-Allow-Origin"], "https://survey.onrender.com")
         self.assertEqual(rejected.status_code, 403)
 
 
