@@ -27,14 +27,15 @@ const copy = {
     emailServerNotConfigured: "Render is missing email configuration. Check its environment settings.",
     emailMissingVariables: "Render is missing these settings: {variables}. Add them under the Web Service’s Environment settings.",
     emailInvalidVariables: "These Render settings need correction: {variables}.",
-    emailSmtpFailed: "Render received your choices but could not send the email. Check its logs and SMTP settings.",
-    emailSmtpAuthentication: "The SMTP server rejected authentication. Check SMTP_USERNAME, SMTP_PASSWORD (often an app password), and whether SMTP AUTH is enabled.",
-    emailSmtpSender: "The SMTP server rejected SMTP_FROM_EMAIL. Use a sender address permitted by your email provider.",
-    emailSmtpRecipient: "The SMTP server rejected the recipient. Check SURVEY_TO_EMAIL and whether your provider allows sending to that inbox.",
-    emailSmtpFeature: "The SMTP server does not support the configured authentication or TLS mode. Check SMTP_USE_SSL and SMTP_STARTTLS with your provider.",
-    emailSmtpConnection: "Render could not connect to the SMTP server. Check SMTP_HOST, SMTP_PORT, TLS settings, and whether outbound SMTP is permitted.",
-    emailSmtpDisconnected: "The SMTP server closed the connection before sending. Check the SMTP host, port, and TLS settings.",
-    emailSmtpRejected: "The SMTP server rejected delivery. Check your provider’s SMTP requirements and sender permissions.",
+    emailResendFailed: "Resend could not deliver your choices. Check the Resend configuration.",
+    emailResendApiKey: "Resend rejected RESEND_API_KEY. Check that the key is valid and active.",
+    emailResendPermission: "Resend denied this API key. Check its permissions and your account status.",
+    emailResendSender: "Resend rejected the sender or recipient. Verify the sender domain; test accounts can only send to the account owner’s address.",
+    emailResendRate: "Resend rate-limited the request. Check your account quota and retry later.",
+    emailResendUnavailable: "Resend is temporarily unavailable. Retry later.",
+    emailResendConnection: "Render could not reach Resend over HTTPS. Check the API endpoint and outbound HTTPS access.",
+    emailResendRejected: "Resend rejected the request. Check the sender address and Resend account configuration.",
+    emailProviderStatus: "Resend HTTP status: {status}.",
     emailBadSubmission: "The API rejected these choices. Check that GitHub Pages and Render are using matching app versions.",
     emailApiUnreachable: "The email API could not be reached. Check the Render URL and CORS settings.",
     emailHttpError: "The email API returned HTTP {status}. Check the Render logs.",
@@ -100,14 +101,15 @@ const copy = {
     emailServerNotConfigured: "Render trūksta el. pašto konfigūracijos. Patikrinkite aplinkos nustatymus.",
     emailMissingVariables: "Render trūksta šių nustatymų: {variables}. Įtraukite juos į Web Service aplinkos nustatymus.",
     emailInvalidVariables: "Reikia pataisyti šiuos Render nustatymus: {variables}.",
-    emailSmtpFailed: "Render gavo jūsų pasirinkimus, bet nepavyko išsiųsti el. laiško. Patikrinkite žurnalus ir SMTP nustatymus.",
-    emailSmtpAuthentication: "SMTP serveris atmetė prisijungimą. Patikrinkite SMTP_USERNAME, SMTP_PASSWORD (dažnai reikia programos slaptažodžio) ir ar pašto dėžutėje įjungtas SMTP AUTH.",
-    emailSmtpSender: "SMTP serveris atmetė SMTP_FROM_EMAIL. Naudokite el. pašto paslaugos teikėjo leidžiamą siuntėjo adresą.",
-    emailSmtpRecipient: "SMTP serveris atmetė gavėją. Patikrinkite SURVEY_TO_EMAIL ir ar teikėjas leidžia siųsti į šį adresą.",
-    emailSmtpFeature: "SMTP serveris nepalaiko nustatyto prisijungimo arba TLS režimo. Su teikėju patikrinkite SMTP_USE_SSL ir SMTP_STARTTLS.",
-    emailSmtpConnection: "Render nepavyko prisijungti prie SMTP serverio. Patikrinkite SMTP_HOST, SMTP_PORT, TLS nustatymus ir ar leidžiama išeinanti SMTP prieiga.",
-    emailSmtpDisconnected: "SMTP serveris uždarė ryšį dar neišsiuntus laiško. Patikrinkite SMTP prieglobą, prievadą ir TLS nustatymus.",
-    emailSmtpRejected: "SMTP serveris atmetė laiško siuntimą. Patikrinkite teikėjo SMTP reikalavimus ir siuntėjo teises.",
+    emailResendFailed: "Resend nepavyko išsiųsti jūsų pasirinkimų. Patikrinkite Resend konfigūraciją.",
+    emailResendApiKey: "Resend atmetė RESEND_API_KEY. Patikrinkite, ar raktas galiojantis ir aktyvus.",
+    emailResendPermission: "Resend nesuteikė prieigos šiam API raktui. Patikrinkite jo teises ir paskyros būseną.",
+    emailResendSender: "Resend atmetė siuntėją arba gavėją. Patvirtinkite siuntėjo domeną; bandomoji paskyra gali siųsti tik paskyros savininko adresu.",
+    emailResendRate: "Resend apribojo užklausų dažnį. Patikrinkite paskyros limitą ir bandykite vėliau.",
+    emailResendUnavailable: "Resend laikinai nepasiekiamas. Bandykite vėliau.",
+    emailResendConnection: "Render nepavyko pasiekti Resend per HTTPS. Patikrinkite API adresą ir išeinančio HTTPS ryšio prieigą.",
+    emailResendRejected: "Resend atmetė užklausą. Patikrinkite siuntėjo adresą ir Resend paskyros konfigūraciją.",
+    emailProviderStatus: "Resend HTTP būsena: {status}.",
     emailBadSubmission: "API atmetė šiuos pasirinkimus. Patikrinkite, ar GitHub Pages ir Render naudoja suderintas programos versijas.",
     emailApiUnreachable: "Nepavyko pasiekti el. pašto API. Patikrinkite Render adresą ir CORS nustatymus.",
     emailHttpError: "El. pašto API grąžino HTTP {status} klaidą. Patikrinkite Render žurnalus.",
@@ -153,7 +155,7 @@ const paths = {
   draughts: 2
 };
 
-const state = { language: "en", step: 0, answers: [], emailStatus: "idle", emailFailureKey: null, emailFailureStatus: null, emailFailureVariables: [] };
+const state = { language: "en", step: 0, answers: [], emailStatus: "idle", emailFailureKey: null, emailFailureStatus: null, emailFailureVariables: [], emailProviderStatus: null };
 const apiBaseUrl = document.querySelector('meta[name="survey-api-base-url"]').content.trim().replace(/\/$/, "");
 const form = document.querySelector("#survey-form");
 const answerList = document.querySelector("#answer-list");
@@ -290,11 +292,14 @@ function renderEmailStatus() {
     : ["emailMissingVariables", "emailInvalidVariables"].includes(state.emailFailureKey)
       ? failureTemplate.replace("{variables}", state.emailFailureVariables.join(", "))
       : failureTemplate;
+  const providerStatus = state.emailProviderStatus
+    ? ` ${currentCopy().emailProviderStatus.replace("{status}", String(state.emailProviderStatus))}`
+    : "";
   const statusText = {
     idle: "",
     sending: currentCopy().emailSending,
     sent: currentCopy().emailSent,
-    failed: failedText
+    failed: `${failedText}${providerStatus}`
   };
   document.querySelector("#email-status").textContent = statusText[state.emailStatus];
   document.querySelector("#email-retry").hidden = state.emailStatus !== "failed";
@@ -306,6 +311,7 @@ async function sendSurveyEmail() {
   state.emailFailureKey = null;
   state.emailFailureStatus = null;
   state.emailFailureVariables = [];
+  state.emailProviderStatus = null;
   renderEmailStatus();
   try {
     if (!apiBaseUrl && location.hostname.endsWith("github.io")) {
@@ -326,12 +332,13 @@ async function sendSurveyEmail() {
     });
     if (!response.ok) {
       const errorPayload = await response.json().catch(() => ({}));
+      state.emailProviderStatus = errorPayload.provider_status || null;
       state.emailFailureKey = {
         400: "emailBadSubmission",
         403: "emailOriginRejected",
         404: "emailApiUrlMissing",
         405: "emailApiUrlMissing",
-        502: "emailSmtpFailed",
+        502: "emailResendFailed",
         503: "emailServerNotConfigured"
       }[response.status] || "emailHttpError";
       if (response.status === 503 && errorPayload.missing_variables?.length) {
@@ -342,16 +349,17 @@ async function sendSurveyEmail() {
         state.emailFailureVariables = errorPayload.invalid_variables;
       } else if (errorPayload.error_code) {
         state.emailFailureKey = {
-          smtp_authentication_rejected: "emailSmtpAuthentication",
-          smtp_sender_rejected: "emailSmtpSender",
-          smtp_recipient_rejected: "emailSmtpRecipient",
-          smtp_feature_unsupported: "emailSmtpFeature",
-          smtp_connection_rejected: "emailSmtpConnection",
-          smtp_connection_failed: "emailSmtpConnection",
-          smtp_disconnected: "emailSmtpDisconnected",
-          smtp_delivery_rejected: "emailSmtpRejected"
-        }[errorPayload.error_code] || "emailSmtpFailed";
+          resend_api_key_rejected: "emailResendApiKey",
+          resend_permission_denied: "emailResendPermission",
+          resend_sender_unverified: "emailResendSender",
+          resend_rate_limited: "emailResendRate",
+          resend_service_unavailable: "emailResendUnavailable",
+          resend_connection_failed: "emailResendConnection",
+          resend_request_rejected: "emailResendRejected",
+          resend_unexpected_response: "emailResendUnavailable"
+        }[errorPayload.error_code] || "emailResendFailed";
       }
+      state.emailProviderStatus = errorPayload.provider_status || null;
       state.emailFailureStatus = response.status;
       state.emailStatus = "failed";
       renderEmailStatus();
@@ -407,6 +415,7 @@ document.querySelector("#restart-button").addEventListener("click", () => {
   state.emailFailureKey = null;
   state.emailFailureStatus = null;
   state.emailFailureVariables = [];
+  state.emailProviderStatus = null;
   showSurvey();
 });
 
