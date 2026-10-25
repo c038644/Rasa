@@ -1,117 +1,127 @@
 const copy = {
   en: {
     languageLabel: "Language",
-    storyAlt: "A quiet path through the forest",
-    imageAlt: "A sunlit path winding through a green forest",
+    storyAlt: "London street at golden hour",
+    imageAlt: "A lively London street in the evening",
     imageCredit: "Photo: Unsplash",
-    private: "Your answers stay on this device",
-    storyEyebrow: "A better starting point",
-    storyQuote: "A little clarity can change the whole path.",
-    storyCaption: "Take a moment. We’ll find a useful next step together.",
-    introEyebrow: "A short check-in · about 1 minute",
-    heading: "Let’s find your next step.",
-    intro: "A few thoughtful questions will help us understand what matters to you right now.",
+    private: "No sign-up needed",
+    storyEyebrow: "Make a London day of it",
+    storyQuote: "Good plans are better when shared.",
+    storyCaption: "Pick a mood. We’ll find your kind of get-together.",
+    introEyebrow: "A quick activity finder · about 1 minute",
+    heading: "What sounds fun in London?",
+    intro: "Choose an idea and we’ll help shape it into a good outing with your people.",
     back: "Back",
     continue: "Continue",
-    footer: "Your responses are private and never leave this page.",
-    completeEyebrow: "Your starting point",
-    completeTitle: "Thanks for sharing.",
-    completePrefix: "You’re looking to focus on",
-    completeSuffix: "Your answers give us a clearer picture of what would help.",
+    footer: "When you finish, your choices are emailed to the survey organiser.",
+    completeEyebrow: "Your London plan",
+    completeTitle: "That sounds like a good time.",
+    completeSuffix: "Here’s your idea. Check with the venue for current details before you go.",
+    recommendationEyebrow: "Your activity idea",
+    venueLink: "Visit venue website",
+    emailSending: "Emailing your choices to the organiser…",
+    emailSent: "Your choices have been emailed to the organiser.",
+    emailFailed: "We couldn’t send your choices. Please try again.",
+    emailRetry: "Try email again",
     restart: "Start again",
     selectError: "Choose an answer to continue.",
     stepLabel: "Question",
-    firstQuestion: "What would you like to focus on?",
-    firstHint: "Choose the one that feels closest.",
+    firstQuestion: "Which London outing would you choose?",
+    firstHint: "Pick the plan you’d be most excited to do.",
     branches: {
-      career: {
-        question: "What kind of growth matters most to you?",
-        hint: "We’ll tailor the next step to your priorities.",
-        answers: ["Build confidence in my current role", "Explore a new role or career", "Learn a specific skill"]
+      bounce: {
+        question: "What would make game night most fun?",
+        hint: "We’ll tune the plan to your group.",
+        answers: ["Easygoing games and a catch-up", "A little friendly competition", "Add food and drinks"]
       },
-      project: {
-        question: "When are you hoping to get started?",
-        hint: "A rough sense of timing is enough.",
-        answers: ["As soon as possible", "In the next few months", "I’m still exploring"]
+      camden: {
+        question: "What sounds best for your Camden wander?",
+        hint: "There’s room to make this your own.",
+        answers: ["Sample a few food stalls", "Browse the market together", "Take a canal-side stroll"]
       },
-      support: {
-        question: "What would be most helpful right now?",
-        hint: "Pick the kind of support you would value most.",
-        answers: ["Practical advice", "Useful resources", "A conversation with someone"]
+      draughts: {
+        question: "What kind of board-game night are you after?",
+        hint: "Draughts has games for first-timers and enthusiasts alike.",
+        answers: ["Light, easy-to-learn games", "A strategic challenge", "Try something completely new"]
       }
     },
-    lastQuestions: ["What would a good outcome look like for you?", "How much time can you set aside each week?", "Anything else you’d like us to keep in mind?"],
-    lastAnswers: ["A clear plan I can act on", "A few options to consider", "More confidence about what comes next"],
-    lastHints: ["Think about what would make this worthwhile.", "A realistic estimate is perfect.", "Choose the answer that feels most useful."],
-    firstAnswers: ["Grow my career", "Plan a project", "Find support"],
-    summaryLabels: ["Your focus", "Your next step", "What would help"],
-    finalAnswerFor: (index) => [
-      ["A clear plan I can act on", "A few options to consider", "More confidence about what comes next"][index],
-      ["A realistic rhythm", "Room to make progress", "A little space to explore"][index],
-      ["Practical direction", "Helpful resources", "A fresh perspective"][index]
-    ]
+    lastQuestion: "When would you like to go?",
+    lastHint: "Choose a time that works for your group.",
+    lastAnswers: ["A weekday evening", "A weekend", "I’m flexible"],
+    firstAnswers: ["Ping-pong and games at Bounce", "Food, stalls and a canal walk at Camden Market", "Board games at Draughts"],
+    summaryLabels: ["Your outing", "Your vibe", "When"],
+    recommendations: {
+      bounce: { title: "Ping-pong at Bounce", location: "Farringdon or Old Street, London", description: "Book a table, pick up a paddle and turn a catch-up into a friendly rally. Check the venue for sessions and food options.", url: "https://www.bouncepingpong.com/" },
+      camden: { title: "A Camden Market food-and-canal wander", location: "Camden Town, London", description: "Pick a few bites from the market, browse the stalls, then stretch the outing with a walk beside Regent’s Canal.", url: "https://camdenmarket.com/" },
+      draughts: { title: "Board-game night at Draughts", location: "Waterloo or Hackney Wick, London", description: "Settle in with a board-game collection, order something to eat and let the staff help your group find a game.", url: "https://www.draughtslondon.com/" }
+    }
   },
   lt: {
     languageLabel: "Kalba",
-    storyAlt: "Ramus miško takas",
-    imageAlt: "Saulės nušviestas takas žaliame miške",
+    storyAlt: "Londono gatvė vakaro šviesoje",
+    imageAlt: "Gyva Londono gatvė vakare",
     imageCredit: "Nuotrauka: Unsplash",
-    private: "Jūsų atsakymai lieka šiame įrenginyje",
-    storyEyebrow: "Gera pradžia",
-    storyQuote: "Šiek tiek aiškumo gali pakeisti visą kelią.",
-    storyCaption: "Skirkite akimirką. Kartu rasime tinkamą kitą žingsnį.",
-    introEyebrow: "Trumpa apklausa · apie 1 min.",
-    heading: "Atraskime kitą jūsų žingsnį.",
-    intro: "Keli klausimai padės suprasti, kas jums šiuo metu svarbiausia.",
+    private: "Registruotis nereikia",
+    storyEyebrow: "Praleiskite dieną Londone",
+    storyQuote: "Geri planai dar geresni, kai jais dalijatės.",
+    storyCaption: "Pasirinkite nuotaiką. Rasime jums tinkamą veiklą.",
+    introEyebrow: "Greita veiklų paieška · apie 1 min.",
+    heading: "Ką smagaus nuveikti Londone?",
+    intro: "Pasirinkite idėją, o mes padėsime suplanuoti puikią išvyką su artimaisiais.",
     back: "Atgal",
     continue: "Tęsti",
-    footer: "Jūsų atsakymai yra privatūs ir nepalieka šio puslapio.",
-    completeEyebrow: "Jūsų pradžios taškas",
-    completeTitle: "Ačiū, kad pasidalijote.",
-    completePrefix: "Norite susitelkti į sritį",
-    completeSuffix: "Jūsų atsakymai padeda geriau suprasti, kas jums būtų naudinga.",
+    footer: "Baigus apklausą, jūsų pasirinkimai bus išsiųsti organizatoriui el. paštu.",
+    completeEyebrow: "Jūsų planas Londone",
+    completeTitle: "Skamba kaip puiki idėja.",
+    completeSuffix: "Štai jūsų idėja. Prieš vykdami patikrinkite naujausią informaciją paslaugos teikėjo svetainėje.",
+    recommendationEyebrow: "Jums skirta veiklos idėja",
+    venueLink: "Apsilankyti svetainėje",
+    emailSending: "Jūsų pasirinkimai siunčiami organizatoriui el. paštu…",
+    emailSent: "Jūsų pasirinkimai išsiųsti organizatoriui el. paštu.",
+    emailFailed: "Nepavyko išsiųsti pasirinkimų. Bandykite dar kartą.",
+    emailRetry: "Siųsti dar kartą",
     restart: "Pradėti iš naujo",
     selectError: "Norėdami tęsti, pasirinkite atsakymą.",
     stepLabel: "Klausimas",
-    firstQuestion: "Kam norėtumėte skirti dėmesio?",
-    firstHint: "Pasirinkite artimiausią variantą.",
+    firstQuestion: "Kuri išvyka Londone jums patiktų?",
+    firstHint: "Pasirinkite planą, kuris labiausiai vilioja.",
     branches: {
-      career: {
-        question: "Kokio profesinio augimo labiausiai siekiate?",
-        hint: "Kitas žingsnis priklausys nuo jūsų prioritetų.",
-        answers: ["Labiau pasitikėti savimi dabartiniame darbe", "Atrasti naują darbą ar karjeros kryptį", "Išmokti konkretų įgūdį"]
+      bounce: {
+        question: "Kas žaidimų vakarą paverstų smagiausiu?",
+        hint: "Pritaikysime planą jūsų kompanijai.",
+        answers: ["Ramus žaidimas ir pokalbiai", "Draugiškos varžybos", "Maistas ir gėrimai"]
       },
-      project: {
-        question: "Kada norėtumėte pradėti?",
-        hint: "Užtenka apytiksliai įvertinti laiką.",
-        answers: ["Kuo greičiau", "Per artimiausius kelis mėnesius", "Kol kas tik domiuosi galimybėmis"]
+      camden: {
+        question: "Kas labiausiai vilioja pasivaikščiojime po Camdeną?",
+        hint: "Išvyką galite susikurti pagal savo skonį.",
+        answers: ["Paragauti kelių patiekalų", "Kartu apžiūrėti turgų", "Pasivaikščioti palei kanalą"]
       },
-      support: {
-        question: "Kas jums šiuo metu būtų naudingiausia?",
-        hint: "Pasirinkite labiausiai vertinamą pagalbos būdą.",
-        answers: ["Praktinis patarimas", "Naudingi ištekliai", "Pokalbis su kitu žmogumi"]
+      draughts: {
+        question: "Kokio stalo žaidimų vakaro norėtumėte?",
+        hint: "„Draughts“ rasite žaidimų ir naujokams, ir entuziastams.",
+        answers: ["Lengvų, greitai perprantamų žaidimų", "Strateginio iššūkio", "Išbandyti dar nežaistą žaidimą"]
       }
     },
-    lastQuestions: ["Kaip atrodytų jums tinkamas rezultatas?", "Kiek laiko galėtumėte skirti per savaitę?", "Į ką dar norėtumėte atkreipti dėmesį?"],
-    lastAnswers: ["Aiškus planas, kurio galėčiau imtis", "Keletas galimų variantų", "Daugiau užtikrintumo dėl tolesnių žingsnių"],
-    lastHints: ["Pagalvokite, kas šią patirtį paverstų prasminga.", "Tiks ir apytikslis įvertinimas.", "Pasirinkite naudingiausią variantą."],
-    firstAnswers: ["Tobulinti karjerą", "Planuoti projektą", "Rasti pagalbą"],
-    summaryLabels: ["Jūsų tikslas", "Kitas žingsnis", "Kas padėtų"],
-    finalAnswerFor: (index) => [
-      ["Aiškus veiksmų planas", "Keletas variantų apsvarstymui", "Daugiau pasitikėjimo dėl tolesnių žingsnių"][index],
-      ["Realistiškas tempas", "Galimybė daryti pažangą", "Laiko galimybėms patyrinėti"][index],
-      ["Praktinė kryptis", "Naudingi ištekliai", "Naujas požiūris"][index]
-    ]
+    lastQuestion: "Kada norėtumėte apsilankyti?",
+    lastHint: "Pasirinkite laiką, tinkantį jūsų kompanijai.",
+    lastAnswers: ["Darbo dienos vakarą", "Savaitgalį", "Laikas nėra svarbus"],
+    firstAnswers: ["Stalo tenisas ir žaidimai „Bounce“", "Maistas, turgus ir kanalas Camden turguje", "Stalo žaidimai „Draughts“"],
+    summaryLabels: ["Jūsų išvyka", "Jūsų nuotaika", "Kada"],
+    recommendations: {
+      bounce: { title: "Stalo tenisas „Bounce“ klube", location: "Farringdon arba Old Street, Londonas", description: "Rezervuokite stalą, čiupkite raketę ir paverskite susitikimą draugiškomis varžybomis. Dėl seansų ir maisto pasirinkimų teiraukitės vietos.", url: "https://www.bouncepingpong.com/" },
+      camden: { title: "Maisto ir pasivaikščiojimo prie kanalo išvyka Camden turguje", location: "Camden Town, Londonas", description: "Paragaukite kelių patiekalų turguje, apžiūrėkite prekystalius, o tada pasivaikščiokite palei Regent kanalą.", url: "https://camdenmarket.com/" },
+      draughts: { title: "Stalo žaidimų vakaras „Draughts“ klube", location: "Waterloo arba Hackney Wick, Londonas", description: "Rinkitės iš daugybės stalo žaidimų, užsisakykite užkandžių ir paprašykite darbuotojų padėti išsirinkti žaidimą.", url: "https://www.draughtslondon.com/" }
+    }
   }
 };
 
 const paths = {
-  career: ["career", 0, 0],
-  project: ["project", 1, 1],
-  support: ["support", 2, 2]
+  bounce: 0,
+  camden: 1,
+  draughts: 2
 };
 
-const state = { language: "en", step: 0, answers: [] };
+const state = { language: "en", step: 0, answers: [], emailStatus: "idle" };
 const form = document.querySelector("#survey-form");
 const answerList = document.querySelector("#answer-list");
 const questionTitle = document.querySelector("#question-title");
@@ -148,19 +158,18 @@ function renderStaticCopy() {
 function questionForStep(step) {
   const languageCopy = currentCopy();
   if (step === 0) {
-    return { title: languageCopy.firstQuestion, hint: languageCopy.firstHint, answers: languageCopy.firstAnswers, keys: ["career", "project", "support"] };
+    return { title: languageCopy.firstQuestion, hint: languageCopy.firstHint, answers: languageCopy.firstAnswers, keys: ["bounce", "camden", "draughts"] };
   }
   const branchKey = state.answers[0]?.key;
   const branch = languageCopy.branches[branchKey];
   if (step === 1) {
     return { title: branch.question, hint: branch.hint, answers: branch.answers, keys: ["first", "second", "third"] };
   }
-  const path = paths[branchKey];
   return {
-    title: languageCopy.lastQuestions[path[1]],
-    hint: languageCopy.lastHints[path[1]],
+    title: languageCopy.lastQuestion,
+    hint: languageCopy.lastHint,
     answers: languageCopy.lastAnswers,
-    keys: ["first", "second", "third"]
+    keys: ["weekday", "weekend", "flexible"]
   };
 }
 
@@ -200,16 +209,25 @@ function renderQuestion() {
 
 function answerForStep(step) {
   const languageCopy = currentCopy();
-  if (step === 0) return languageCopy.firstAnswers[paths[state.answers[0].key][1]];
+  const activityIndex = paths[state.answers[0].key];
+  if (step === 0) return languageCopy.firstAnswers[activityIndex];
   const branchKey = state.answers[0].key;
-  if (step === 1) return languageCopy.branches[branchKey].answers[languageCopy.branches[branchKey].answers.findIndex((_, index) => ["first", "second", "third"][index] === state.answers[1].key)];
-  return languageCopy.finalAnswerFor(paths[branchKey][2])[ ["first", "second", "third"].indexOf(state.answers[2].key) ];
+  const answerIndex = step === 1
+    ? ["first", "second", "third"].indexOf(state.answers[step].key)
+    : ["weekday", "weekend", "flexible"].indexOf(state.answers[step].key);
+  if (step === 1) return languageCopy.branches[branchKey].answers[answerIndex];
+  return languageCopy.lastAnswers[answerIndex];
 }
 
 function renderCompletion() {
   const languageCopy = currentCopy();
-  const focusAnswer = answerForStep(0);
-  document.querySelector("#completion-copy").textContent = `${languageCopy.completePrefix} „${focusAnswer}“. ${languageCopy.completeSuffix}`;
+  document.querySelector("#completion-copy").textContent = languageCopy.completeSuffix;
+  const recommendation = languageCopy.recommendations[state.answers[0].key];
+  document.querySelector("#recommendation-title").textContent = recommendation.title;
+  document.querySelector("#recommendation-location").textContent = recommendation.location;
+  document.querySelector("#recommendation-description").textContent = recommendation.description;
+  document.querySelector("#recommendation-link").href = recommendation.url;
+  renderEmailStatus();
   const summary = document.querySelector("#answer-summary");
   summary.replaceChildren();
   state.answers.forEach((answer, index) => {
@@ -230,6 +248,40 @@ function renderCompletion() {
   document.querySelector("#completion").hidden = false;
   document.querySelector("#step-current").textContent = "03";
   document.querySelector("#step-total").textContent = "03";
+}
+
+function renderEmailStatus() {
+  const statusText = {
+    idle: "",
+    sending: currentCopy().emailSending,
+    sent: currentCopy().emailSent,
+    failed: currentCopy().emailFailed
+  };
+  document.querySelector("#email-status").textContent = statusText[state.emailStatus];
+  document.querySelector("#email-retry").hidden = state.emailStatus !== "failed";
+}
+
+async function sendSurveyEmail() {
+  if (state.emailStatus === "sending" || state.emailStatus === "sent") return;
+  state.emailStatus = "sending";
+  renderEmailStatus();
+  try {
+    const response = await fetch("/api/submissions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        language: state.language,
+        activity: state.answers[0].key,
+        preference: state.answers[1].key,
+        timing: state.answers[2].key
+      })
+    });
+    if (!response.ok) throw new Error("Email submission failed");
+    state.emailStatus = "sent";
+  } catch {
+    state.emailStatus = "failed";
+  }
+  renderEmailStatus();
 }
 
 function showSurvey() {
@@ -253,6 +305,7 @@ form.addEventListener("submit", (event) => {
   if (state.step === 2) {
     state.step = 3;
     renderCompletion();
+    sendSurveyEmail();
   } else {
     state.step += 1;
     renderQuestion();
@@ -269,8 +322,11 @@ document.querySelector("#back-button").addEventListener("click", () => {
 document.querySelector("#restart-button").addEventListener("click", () => {
   state.step = 0;
   state.answers = [];
+  state.emailStatus = "idle";
   showSurvey();
 });
+
+document.querySelector("#email-retry").addEventListener("click", sendSurveyEmail);
 
 document.querySelectorAll("[data-language]").forEach((button) => {
   button.addEventListener("click", () => {
