@@ -1,16 +1,16 @@
 from __future__ import annotations
 
+import json
 import os
-import smtplib
-import ssl
 import time
 from collections import deque
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from email.message import EmailMessage
 from pathlib import Path
 from threading import Lock
 from typing import Any
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 from flask import Flask, abort, jsonify, make_response, request, send_from_directory
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -19,6 +19,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 BASE_DIR = Path(__file__).resolve().parent
 MAX_BODY_BYTES = 16_384
 STATIC_FILES = {"app.js", "styles.css"}
+RESEND_API_URL = "https://api.resend.com/emails"
 RATE_WINDOW_SECONDS = 60
 RATE_LIMIT = 10
 REQUESTS_BY_CLIENT: dict[str, deque[float]] = {}
@@ -63,7 +64,7 @@ TIMES = {
 }
 
 
-class MailConfigurationError(Exception):
+class EmailConfigurationError(Exception):
     def __init__(self, message: str, *, missing_variables: tuple[str, ...] = (), invalid_variables: tuple[str, ...] = ()) -> None:
         super().__init__(message)
         self.missing_variables = missing_variables
@@ -71,15 +72,10 @@ class MailConfigurationError(Exception):
 
 
 @dataclass(frozen=True)
-class SMTPSettings:
-    host: str
-    port: int
+class ResendSettings:
+    api_key: str
     sender: str
     recipient: str
-    username: str | None
-    password: str | None
-    use_ssl: bool
-    starttls: bool
 
 
 def validate_submission(payload: Any) -> dict[str, str]:
@@ -101,42 +97,25 @@ def validate_submission(payload: Any) -> dict[str, str]:
     return {"language": language, "activity": activity, "preference": preference, "timing": timing}
 
 
-def load_smtp_settings() -> SMTPSettings:
-    host = os.environ.get("SMTP_HOST", "").strip()
-    sender = os.environ.get("SMTP_FROM_EMAIL", "").strip()
+def load_resend_settings() -> ResendSettings:
+    api_key = os.environ.get("RESEND_API_KEY", "").strip()
+    sender = os.environ.get("RESEND_FROM_EMAIL", "").strip()
     recipient = os.environ.get("SURVEY_TO_EMAIL", "").strip()
     missing_variables = tuple(
         variable
         for variable, value in (
-            ("SMTP_HOST", host),
-            ("SMTP_FROM_EMAIL", sender),
+            ("RESEND_API_KEY", api_key),
+            ("RESEND_FROM_EMAIL", sender),
             ("SURVEY_TO_EMAIL", recipient),
         )
         if not value
     )
     if missing_variables:
-        raise MailConfigurationError("Required email settings are missing.", missing_variables=missing_variables)
-
-    try:
-        port = int(os.environ.get("SMTP_PORT", "587"))
-    except ValueError as error:
-        raise MailConfigurationError("SMTP_PORT must be a number.", invalid_variables=("SMTP_PORT",)) from error
-
-    username = os.environ.get("SMTP_USERNAME", "").strip() or None
-    password = os.environ.get("SMTP_PASSWORD", "") or None
-    if bool(username) != bool(password):
-        missing_pair_variable = "SMTP_PASSWORD" if username else "SMTP_USERNAME"
-        raise MailConfigurationError(
-            "SMTP_USERNAME and SMTP_PASSWORD must either both be set or both be omitted.",
-            missing_variables=(missing_pair_variable,),
-        )
-
-    use_ssl = os.environ.get("SMTP_USE_SSL", "0").lower() in {"1", "true", "yes"}
-    starttls = os.environ.get("SMTP_STARTTLS", "1").lower() in {"1", "true", "yes"}
-    return SMTPSettings(host, port, sender, recipient, username, password, use_ssl, starttls)
+        raise EmailConfigurationError("Required Resend settings are missing.", missing_variables=missing_variables)
+    return ResendSettings(api_key, sender, recipient)
 
 
-def build_email(payload: Any, settings: SMTPSettings) -> EmailMessage:
+def build_email(payload: Any, settings: ResendSettings) -> dict[str, Any]:
     submission = validate_submission(payload)
     language = submission["language"]
     activity = submission["activity"]
@@ -145,58 +124,72 @@ def build_email(payload: Any, settings: SMTPSettings) -> EmailMessage:
         "en": {"subject": "New London social activity choice", "activity": "Activity", "preference": "What they enjoy", "timing": "When", "language": "Survey language"},
         "lt": {"subject": "Naujas Londono socialinės veiklos pasirinkimas", "activity": "Veikla", "preference": "Pageidavimai", "timing": "Kada", "language": "Apklausos kalba"},
     }[language]
-
-    message = EmailMessage()
-    message["Subject"] = labels["subject"]
-    message["From"] = settings.sender
-    message["To"] = settings.recipient
-    message.set_content(
-        "\n".join(
-            [
-                f"{labels['activity']}: {ACTIVITIES[activity][language]}",
-                f"{labels['preference']}: {PREFERENCES[activity][language][preference_index]}",
-                f"{labels['timing']}: {TIMES[language][submission['timing']]}",
-                f"{labels['language']}: {language}",
-                f"Submitted (UTC): {datetime.now(timezone.utc).isoformat(timespec='seconds')}",
-            ]
-        )
+    body = "\n".join(
+        [
+            f"{labels['activity']}: {ACTIVITIES[activity][language]}",
+            f"{labels['preference']}: {PREFERENCES[activity][language][preference_index]}",
+            f"{labels['timing']}: {TIMES[language][submission['timing']]}",
+            f"{labels['language']}: {language}",
+            f"Submitted (UTC): {datetime.now(timezone.utc).isoformat(timespec='seconds')}",
+        ]
     )
-    return message
+    return {
+        "from": settings.sender,
+        "to": [settings.recipient],
+        "subject": labels["subject"],
+        "text": body,
+    }
 
 
 def send_submission(payload: Any) -> None:
-    settings = load_smtp_settings()
-    message = build_email(payload, settings)
-    if settings.use_ssl:
-        client = smtplib.SMTP_SSL(settings.host, settings.port, timeout=15, context=ssl.create_default_context())
-    else:
-        client = smtplib.SMTP(settings.host, settings.port, timeout=15)
+    settings = load_resend_settings()
+    payload_json = json.dumps(build_email(payload, settings)).encode("utf-8")
+    api_request = Request(
+        RESEND_API_URL,
+        data=payload_json,
+        headers={
+            "Authorization": f"Bearer {settings.api_key}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+    try:
+        with urlopen(api_request, timeout=15) as response:
+            if not 200 <= response.status < 300:
+                raise EmailDeliveryError(
+                    "resend_unexpected_response",
+                    "Resend returned an unexpected response.",
+                    response.status,
+                )
+    except HTTPError as error:
+        error_code, details = resend_http_diagnostics(error.code)
+        raise EmailDeliveryError(error_code, details, error.code) from error
+    except (TimeoutError, URLError, OSError) as error:
+        raise EmailDeliveryError(
+            "resend_connection_failed",
+            "Could not reach Resend over HTTPS. Check Render outbound HTTPS access.",
+        ) from error
 
-    with client as smtp:
-        if settings.starttls and not settings.use_ssl:
-            smtp.starttls(context=ssl.create_default_context())
-        if settings.username and settings.password:
-            smtp.login(settings.username, settings.password)
-        smtp.send_message(message)
+
+class EmailDeliveryError(Exception):
+    def __init__(self, error_code: str, message: str, http_status: int | None = None) -> None:
+        super().__init__(message)
+        self.error_code = error_code
+        self.http_status = http_status
 
 
-def smtp_failure_diagnostics(error: OSError | smtplib.SMTPException) -> tuple[str, str, int | None]:
-    smtp_code = getattr(error, "smtp_code", None)
-    if isinstance(error, smtplib.SMTPAuthenticationError):
-        return "smtp_authentication_rejected", "SMTP authentication was rejected.", smtp_code
-    if isinstance(error, smtplib.SMTPSenderRefused):
-        return "smtp_sender_rejected", "The SMTP server rejected the configured sender address.", smtp_code
-    if isinstance(error, smtplib.SMTPRecipientsRefused):
-        return "smtp_recipient_rejected", "The SMTP server rejected the configured recipient address.", None
-    if isinstance(error, smtplib.SMTPNotSupportedError):
-        return "smtp_feature_unsupported", "The SMTP server does not support the requested authentication or TLS mode.", None
-    if isinstance(error, smtplib.SMTPConnectError):
-        return "smtp_connection_rejected", "The SMTP server rejected the connection.", smtp_code
-    if isinstance(error, smtplib.SMTPServerDisconnected):
-        return "smtp_disconnected", "The SMTP server closed the connection before delivery completed.", None
-    if isinstance(error, (TimeoutError, OSError)):
-        return "smtp_connection_failed", "Could not connect to the SMTP server. Check host, port, TLS settings, and outbound SMTP access.", None
-    return "smtp_delivery_rejected", "The SMTP server rejected delivery. Check provider requirements and sender authorization.", smtp_code
+def resend_http_diagnostics(status: int) -> tuple[str, str]:
+    if status == 401:
+        return "resend_api_key_rejected", "Resend rejected the API key. Check RESEND_API_KEY."
+    if status == 403:
+        return "resend_permission_denied", "Resend denied this request. Check API key permissions and account status."
+    if status == 422:
+        return "resend_sender_unverified", "Resend rejected the sender or recipient. Verify the sender domain and check recipient restrictions."
+    if status == 429:
+        return "resend_rate_limited", "Resend rate-limited the request. Check your account quota and retry later."
+    if status >= 500:
+        return "resend_service_unavailable", "Resend is temporarily unavailable. Retry later."
+    return "resend_request_rejected", "Resend rejected the request. Check sender configuration and API settings."
 
 
 def is_rate_limited(client_ip: str) -> bool:
@@ -272,7 +265,7 @@ def submit_survey():
 
     try:
         send_submission(submission)
-    except MailConfigurationError as error:
+    except EmailConfigurationError as error:
         app.logger.warning(
             "Email configuration problem; missing=%s invalid=%s",
             ",".join(error.missing_variables) or "none",
@@ -284,10 +277,9 @@ def submit_survey():
             missing_variables=error.missing_variables,
             invalid_variables=error.invalid_variables,
         ), 503
-    except (OSError, smtplib.SMTPException) as error:
-        error_code, details, smtp_code = smtp_failure_diagnostics(error)
-        app.logger.warning("Survey email delivery failed: category=%s smtp_code=%s", error_code, smtp_code)
-        return jsonify(error="Email delivery failed", error_code=error_code, details=details, smtp_code=smtp_code), 502
+    except EmailDeliveryError as error:
+        app.logger.warning("Survey email delivery failed: category=%s provider_status=%s", error.error_code, error.http_status)
+        return jsonify(error="Email delivery failed", error_code=error.error_code, details=str(error), provider_status=error.http_status), 502
 
     return jsonify(status="sent"), 200
 
