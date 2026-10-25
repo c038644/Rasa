@@ -64,7 +64,10 @@ TIMES = {
 
 
 class MailConfigurationError(Exception):
-    pass
+    def __init__(self, message: str, *, missing_variables: tuple[str, ...] = (), invalid_variables: tuple[str, ...] = ()) -> None:
+        super().__init__(message)
+        self.missing_variables = missing_variables
+        self.invalid_variables = invalid_variables
 
 
 @dataclass(frozen=True)
@@ -102,18 +105,31 @@ def load_smtp_settings() -> SMTPSettings:
     host = os.environ.get("SMTP_HOST", "").strip()
     sender = os.environ.get("SMTP_FROM_EMAIL", "").strip()
     recipient = os.environ.get("SURVEY_TO_EMAIL", "").strip()
-    if not host or not sender or not recipient:
-        raise MailConfigurationError("SMTP_HOST, SMTP_FROM_EMAIL and SURVEY_TO_EMAIL must be configured")
+    missing_variables = tuple(
+        variable
+        for variable, value in (
+            ("SMTP_HOST", host),
+            ("SMTP_FROM_EMAIL", sender),
+            ("SURVEY_TO_EMAIL", recipient),
+        )
+        if not value
+    )
+    if missing_variables:
+        raise MailConfigurationError("Required email settings are missing.", missing_variables=missing_variables)
 
     try:
         port = int(os.environ.get("SMTP_PORT", "587"))
     except ValueError as error:
-        raise MailConfigurationError("SMTP_PORT must be a number") from error
+        raise MailConfigurationError("SMTP_PORT must be a number.", invalid_variables=("SMTP_PORT",)) from error
 
     username = os.environ.get("SMTP_USERNAME", "").strip() or None
     password = os.environ.get("SMTP_PASSWORD", "") or None
     if bool(username) != bool(password):
-        raise MailConfigurationError("Set both SMTP_USERNAME and SMTP_PASSWORD, or neither")
+        missing_pair_variable = "SMTP_PASSWORD" if username else "SMTP_USERNAME"
+        raise MailConfigurationError(
+            "SMTP_USERNAME and SMTP_PASSWORD must either both be set or both be omitted.",
+            missing_variables=(missing_pair_variable,),
+        )
 
     use_ssl = os.environ.get("SMTP_USE_SSL", "0").lower() in {"1", "true", "yes"}
     starttls = os.environ.get("SMTP_STARTTLS", "1").lower() in {"1", "true", "yes"}
@@ -237,8 +253,18 @@ def submit_survey():
 
     try:
         send_submission(submission)
-    except MailConfigurationError:
-        return jsonify(error="Email delivery is not configured"), 503
+    except MailConfigurationError as error:
+        app.logger.warning(
+            "Email configuration problem; missing=%s invalid=%s",
+            ",".join(error.missing_variables) or "none",
+            ",".join(error.invalid_variables) or "none",
+        )
+        return jsonify(
+            error="Email delivery is not configured",
+            details=str(error),
+            missing_variables=error.missing_variables,
+            invalid_variables=error.invalid_variables,
+        ), 503
     except (OSError, smtplib.SMTPException):
         app.logger.exception("Survey email delivery failed")
         return jsonify(error="Email delivery failed"), 502
