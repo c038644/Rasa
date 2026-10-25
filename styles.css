@@ -120,6 +120,15 @@ h1 { max-width: 440px; margin: 0; font-size: clamp(29px, 3.2vw, 42px); font-weig
 .summary-row { display: grid; grid-template-columns: 1fr auto; gap: 16px; padding: 13px 0; border-bottom: 1px solid var(--line); }
 .summary-question { color: var(--muted); font-size: 11px; }
 .summary-answer { color: var(--ink); font-size: 12px; font-weight: 600; text-align: right; }
+.recommendation { margin-top: 22px; padding: 17px 18px; border-left: 3px solid var(--accent); background: #f5f6f0; }
+.recommendation .eyebrow { margin-bottom: 8px; }
+.recommendation h3 { margin: 0; color: var(--ink); font-family: "Manrope", sans-serif; font-size: 16px; line-height: 1.35; }
+.recommendation-location { margin: 5px 0 0; color: var(--green); font-size: 11px; font-weight: 600; }
+.recommendation-description { margin: 10px 0 14px; color: var(--muted); font-size: 12px; line-height: 1.55; }
+.recommendation-link { display: inline-flex; align-items: center; gap: 8px; color: var(--green-dark); font-size: 11px; font-weight: 700; text-decoration: none; }
+.recommendation-link svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.5; }
+.email-status { min-height: 16px; margin: 12px 0 0; color: var(--muted); font-size: 11px; }
+.email-retry { margin: 0; padding: 0; border: 0; background: none; color: #a53c2d; cursor: pointer; font-size: 11px; font-weight: 700; text-decoration: underline; }
 .restart-button { margin-top: 22px; padding: 0; border: 0; background: none; color: var(--green); font-size: 12px; font-weight: 700; }
 [hidden] { display: none !important; }
 
