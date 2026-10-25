@@ -185,8 +185,10 @@ def request_origin_is_allowed() -> bool:
     if not origin:
         return True
     configured_origin = os.environ.get("FRONTEND_ORIGIN", "").strip().rstrip("/")
-    expected_origin = configured_origin or request.host_url.rstrip("/")
-    return origin.rstrip("/") == expected_origin
+    allowed_origins = {request.host_url.rstrip("/")}
+    if configured_origin:
+        allowed_origins.add(configured_origin)
+    return origin.rstrip("/") in allowed_origins
 
 
 @app.after_request
