@@ -28,6 +28,13 @@ const copy = {
     emailMissingVariables: "Render is missing these settings: {variables}. Add them under the Web Service’s Environment settings.",
     emailInvalidVariables: "These Render settings need correction: {variables}.",
     emailSmtpFailed: "Render received your choices but could not send the email. Check its logs and SMTP settings.",
+    emailSmtpAuthentication: "The SMTP server rejected authentication. Check SMTP_USERNAME, SMTP_PASSWORD (often an app password), and whether SMTP AUTH is enabled.",
+    emailSmtpSender: "The SMTP server rejected SMTP_FROM_EMAIL. Use a sender address permitted by your email provider.",
+    emailSmtpRecipient: "The SMTP server rejected the recipient. Check SURVEY_TO_EMAIL and whether your provider allows sending to that inbox.",
+    emailSmtpFeature: "The SMTP server does not support the configured authentication or TLS mode. Check SMTP_USE_SSL and SMTP_STARTTLS with your provider.",
+    emailSmtpConnection: "Render could not connect to the SMTP server. Check SMTP_HOST, SMTP_PORT, TLS settings, and whether outbound SMTP is permitted.",
+    emailSmtpDisconnected: "The SMTP server closed the connection before sending. Check the SMTP host, port, and TLS settings.",
+    emailSmtpRejected: "The SMTP server rejected delivery. Check your provider’s SMTP requirements and sender permissions.",
     emailBadSubmission: "The API rejected these choices. Check that GitHub Pages and Render are using matching app versions.",
     emailApiUnreachable: "The email API could not be reached. Check the Render URL and CORS settings.",
     emailHttpError: "The email API returned HTTP {status}. Check the Render logs.",
@@ -94,6 +101,13 @@ const copy = {
     emailMissingVariables: "Render trūksta šių nustatymų: {variables}. Įtraukite juos į Web Service aplinkos nustatymus.",
     emailInvalidVariables: "Reikia pataisyti šiuos Render nustatymus: {variables}.",
     emailSmtpFailed: "Render gavo jūsų pasirinkimus, bet nepavyko išsiųsti el. laiško. Patikrinkite žurnalus ir SMTP nustatymus.",
+    emailSmtpAuthentication: "SMTP serveris atmetė prisijungimą. Patikrinkite SMTP_USERNAME, SMTP_PASSWORD (dažnai reikia programos slaptažodžio) ir ar pašto dėžutėje įjungtas SMTP AUTH.",
+    emailSmtpSender: "SMTP serveris atmetė SMTP_FROM_EMAIL. Naudokite el. pašto paslaugos teikėjo leidžiamą siuntėjo adresą.",
+    emailSmtpRecipient: "SMTP serveris atmetė gavėją. Patikrinkite SURVEY_TO_EMAIL ir ar teikėjas leidžia siųsti į šį adresą.",
+    emailSmtpFeature: "SMTP serveris nepalaiko nustatyto prisijungimo arba TLS režimo. Su teikėju patikrinkite SMTP_USE_SSL ir SMTP_STARTTLS.",
+    emailSmtpConnection: "Render nepavyko prisijungti prie SMTP serverio. Patikrinkite SMTP_HOST, SMTP_PORT, TLS nustatymus ir ar leidžiama išeinanti SMTP prieiga.",
+    emailSmtpDisconnected: "SMTP serveris uždarė ryšį dar neišsiuntus laiško. Patikrinkite SMTP prieglobą, prievadą ir TLS nustatymus.",
+    emailSmtpRejected: "SMTP serveris atmetė laiško siuntimą. Patikrinkite teikėjo SMTP reikalavimus ir siuntėjo teises.",
     emailBadSubmission: "API atmetė šiuos pasirinkimus. Patikrinkite, ar GitHub Pages ir Render naudoja suderintas programos versijas.",
     emailApiUnreachable: "Nepavyko pasiekti el. pašto API. Patikrinkite Render adresą ir CORS nustatymus.",
     emailHttpError: "El. pašto API grąžino HTTP {status} klaidą. Patikrinkite Render žurnalus.",
@@ -326,6 +340,17 @@ async function sendSurveyEmail() {
       } else if (response.status === 503 && errorPayload.invalid_variables?.length) {
         state.emailFailureKey = "emailInvalidVariables";
         state.emailFailureVariables = errorPayload.invalid_variables;
+      } else if (errorPayload.error_code) {
+        state.emailFailureKey = {
+          smtp_authentication_rejected: "emailSmtpAuthentication",
+          smtp_sender_rejected: "emailSmtpSender",
+          smtp_recipient_rejected: "emailSmtpRecipient",
+          smtp_feature_unsupported: "emailSmtpFeature",
+          smtp_connection_rejected: "emailSmtpConnection",
+          smtp_connection_failed: "emailSmtpConnection",
+          smtp_disconnected: "emailSmtpDisconnected",
+          smtp_delivery_rejected: "emailSmtpRejected"
+        }[errorPayload.error_code] || "emailSmtpFailed";
       }
       state.emailFailureStatus = response.status;
       state.emailStatus = "failed";
