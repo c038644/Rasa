@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch
 
-from server import REQUESTS_BY_CLIENT, SMTPSettings, app, build_email, send_submission, validate_submission
+from server import REQUESTS_BY_CLIENT, MailConfigurationError, SMTPSettings, app, build_email, load_smtp_settings, send_submission, validate_submission
 
 
 class SurveyEmailTests(unittest.TestCase):
@@ -42,6 +42,25 @@ class SurveyEmailTests(unittest.TestCase):
     def test_rejects_unknown_choices(self):
         with self.assertRaises(ValueError):
             validate_submission({"language": "en", "activity": "external", "preference": "first", "timing": "weekend"})
+
+    @patch.dict("os.environ", {}, clear=True)
+    def test_reports_exact_missing_required_mail_settings(self):
+        with self.assertRaises(MailConfigurationError) as caught:
+            load_smtp_settings()
+
+        self.assertEqual(
+            caught.exception.missing_variables,
+            ("SMTP_HOST", "SMTP_FROM_EMAIL", "SURVEY_TO_EMAIL"),
+        )
+        self.assertNotIn("password", str(caught.exception).lower())
+
+    @patch.dict("os.environ", {"SMTP_HOST": "smtp.example.com", "SMTP_FROM_EMAIL": "survey@example.com", "SURVEY_TO_EMAIL": "organiser@example.com", "SMTP_USERNAME": "survey@example.com"}, clear=True)
+    def test_reports_missing_password_without_exposing_credentials(self):
+        with self.assertRaises(MailConfigurationError) as caught:
+            load_smtp_settings()
+
+        self.assertEqual(caught.exception.missing_variables, ("SMTP_PASSWORD",))
+        self.assertNotIn("survey@example.com", str(caught.exception))
 
     def test_ignores_client_supplied_recipient(self):
         message = build_email(
@@ -85,6 +104,19 @@ class SurveyEmailTests(unittest.TestCase):
         )
 
         self.assertEqual(response.status_code, 400)
+
+    @patch("server.send_submission", side_effect=MailConfigurationError(
+        "Required email settings are missing.", missing_variables=("SURVEY_TO_EMAIL",)
+    ))
+    def test_submission_endpoint_identifies_missing_mail_variable(self, _send_submission_mock):
+        response = app.test_client().post(
+            "/api/submissions",
+            json={"language": "en", "activity": "bounce", "preference": "first", "timing": "weekend"},
+        )
+
+        self.assertEqual(response.status_code, 503)
+        self.assertEqual(response.json["missing_variables"], ["SURVEY_TO_EMAIL"])
+        self.assertNotIn("SMTP_PASSWORD", response.get_data(as_text=True))
 
     def test_submission_endpoint_allows_only_configured_origin(self):
         with patch.dict("os.environ", {"FRONTEND_ORIGIN": "https://example.github.io"}):
