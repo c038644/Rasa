@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#f4f2ec" />
-    <meta name="description" content="A short, branching survey to find a useful next step." />
-    <title>Common Ground | Find your next step</title>
+    <meta name="description" content="Find a fun social activity in London." />
+    <title>Common Ground | London plans</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -83,6 +83,20 @@
             <h2 data-copy="completeTitle"></h2>
             <p id="completion-copy" class="completion-copy"></p>
             <div id="answer-summary" class="answer-summary"></div>
+            <article class="recommendation">
+              <p class="eyebrow" data-copy="recommendationEyebrow"></p>
+              <h3 id="recommendation-title"></h3>
+              <p id="recommendation-location" class="recommendation-location"></p>
+              <p id="recommendation-description" class="recommendation-description"></p>
+              <a id="recommendation-link" class="recommendation-link" href="#" target="_blank" rel="noopener noreferrer">
+                <span data-copy="venueLink"></span>
+                <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M11 4h5v5m0-5-7 7M14 11v4a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h4" /></svg>
+              </a>
+            </article>
+            <p id="email-status" class="email-status" role="status" aria-live="polite"></p>
+            <button id="email-retry" class="email-retry" type="button" hidden>
+              <span data-copy="emailRetry"></span>
+            </button>
             <button id="restart-button" class="restart-button" type="button">
               <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M16 9a6 6 0 0 0-10.6-3L4 7.5M4 4v3.5h3.5M4 11a6 6 0 0 0 10.6 3L16 12.5M16 16v-3.5h-3.5" /></svg>
               <span data-copy="restart"></span>
