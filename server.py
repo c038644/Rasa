@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import os
 import smtplib
 import ssl
@@ -9,19 +8,24 @@ from collections import deque
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from email.message import EmailMessage
-from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from threading import Lock
 from typing import Any
-from urllib.parse import urlsplit
+
+from flask import Flask, abort, jsonify, make_response, request, send_from_directory
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 
 BASE_DIR = Path(__file__).resolve().parent
 MAX_BODY_BYTES = 16_384
+STATIC_FILES = {"app.js", "styles.css"}
 RATE_WINDOW_SECONDS = 60
 RATE_LIMIT = 10
 REQUESTS_BY_CLIENT: dict[str, deque[float]] = {}
 REQUESTS_LOCK = Lock()
+app = Flask(__name__)
+app.config["MAX_CONTENT_LENGTH"] = MAX_BODY_BYTES
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 
 ACTIVITIES = {
     "bounce": {
@@ -176,67 +180,74 @@ def is_rate_limited(client_ip: str) -> bool:
         return False
 
 
-class SurveyRequestHandler(SimpleHTTPRequestHandler):
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        super().__init__(*args, directory=str(BASE_DIR), **kwargs)
+def request_origin_is_allowed() -> bool:
+    origin = request.headers.get("Origin")
+    if not origin:
+        return True
+    configured_origin = os.environ.get("FRONTEND_ORIGIN", "").strip().rstrip("/")
+    expected_origin = configured_origin or request.host_url.rstrip("/")
+    return origin.rstrip("/") == expected_origin
 
-    def _send_json(self, status: int, payload: dict[str, str]) -> None:
-        body = json.dumps(payload).encode("utf-8")
-        self.send_response(status)
-        self.send_header("Content-Type", "application/json; charset=utf-8")
-        self.send_header("Content-Length", str(len(body)))
-        self.send_header("Cache-Control", "no-store")
-        self.end_headers()
-        self.wfile.write(body)
 
-    def do_POST(self) -> None:
-        if urlsplit(self.path).path != "/api/submissions":
-            self._send_json(404, {"error": "Not found"})
-            return
-        if is_rate_limited(self.client_address[0]):
-            self._send_json(429, {"error": "Too many submissions. Please try again later."})
-            return
+@app.after_request
+def add_cors_headers(response):
+    origin = request.headers.get("Origin")
+    if origin and request_origin_is_allowed():
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+        response.headers["Vary"] = "Origin"
+    if request.path.startswith("/api/"):
+        response.headers["Cache-Control"] = "no-store"
+    return response
 
-        try:
-            content_length = int(self.headers.get("Content-Length", "0"))
-        except ValueError:
-            self._send_json(400, {"error": "Invalid request"})
-            return
-        if content_length <= 0 or content_length > MAX_BODY_BYTES:
-            self._send_json(413, {"error": "Invalid request size"})
-            return
 
-        try:
-            payload = json.loads(self.rfile.read(content_length).decode("utf-8"))
-            submission = validate_submission(payload)
-        except (UnicodeDecodeError, json.JSONDecodeError, ValueError):
-            self._send_json(400, {"error": "Invalid survey choices"})
-            return
+@app.errorhandler(413)
+def request_too_large(_error):
+    return jsonify(error="Invalid request size"), 413
 
-        try:
-            send_submission(submission)
-        except MailConfigurationError:
-            self._send_json(503, {"error": "Email delivery is not configured"})
-            return
-        except (OSError, smtplib.SMTPException) as error:
-            self.log_error("Survey email delivery failed: %s", error)
-            self._send_json(502, {"error": "Email delivery failed"})
-            return
 
-        self._send_json(200, {"status": "sent"})
+@app.get("/")
+def index():
+    return send_from_directory(BASE_DIR, "index.html")
+
+
+@app.get("/<path:filename>")
+def static_asset(filename: str):
+    if filename not in STATIC_FILES:
+        abort(404)
+    return send_from_directory(BASE_DIR, filename)
+
+
+@app.route("/api/submissions", methods=["POST", "OPTIONS"])
+def submit_survey():
+    if not request_origin_is_allowed():
+        return jsonify(error="Origin not allowed"), 403
+    if request.method == "OPTIONS":
+        return make_response("", 204)
+    if is_rate_limited(request.remote_addr or "unknown"):
+        return jsonify(error="Too many submissions. Please try again later."), 429
+
+    try:
+        submission = validate_submission(request.get_json(silent=True))
+    except ValueError:
+        return jsonify(error="Invalid survey choices"), 400
+
+    try:
+        send_submission(submission)
+    except MailConfigurationError:
+        return jsonify(error="Email delivery is not configured"), 503
+    except (OSError, smtplib.SMTPException):
+        app.logger.exception("Survey email delivery failed")
+        return jsonify(error="Email delivery failed"), 502
+
+    return jsonify(status="sent"), 200
 
 
 def main() -> None:
     host = os.environ.get("HOST", "127.0.0.1")
     port = int(os.environ.get("PORT", "4173"))
-    server = ThreadingHTTPServer((host, port), SurveyRequestHandler)
-    print(f"Serving the survey on http://{host}:{port}")
-    try:
-        server.serve_forever()
-    except KeyboardInterrupt:
-        print("Stopping survey server")
-    finally:
-        server.server_close()
+    app.run(host=host, port=port, debug=False)
 
 
 if __name__ == "__main__":
