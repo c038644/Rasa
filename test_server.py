@@ -1,7 +1,8 @@
+import smtplib
 import unittest
 from unittest.mock import patch
 
-from server import REQUESTS_BY_CLIENT, MailConfigurationError, SMTPSettings, app, build_email, load_smtp_settings, send_submission, validate_submission
+from server import REQUESTS_BY_CLIENT, MailConfigurationError, SMTPSettings, app, build_email, load_smtp_settings, send_submission, smtp_failure_diagnostics, validate_submission
 
 
 class SurveyEmailTests(unittest.TestCase):
@@ -62,6 +63,15 @@ class SurveyEmailTests(unittest.TestCase):
         self.assertEqual(caught.exception.missing_variables, ("SMTP_PASSWORD",))
         self.assertNotIn("survey@example.com", str(caught.exception))
 
+    def test_classifies_smtp_authentication_failure_without_exposing_response(self):
+        error = smtplib.SMTPAuthenticationError(535, b"private authentication response")
+
+        error_code, details, smtp_code = smtp_failure_diagnostics(error)
+
+        self.assertEqual(error_code, "smtp_authentication_rejected")
+        self.assertEqual(smtp_code, 535)
+        self.assertNotIn("private", details)
+
     def test_ignores_client_supplied_recipient(self):
         message = build_email(
             {"language": "en", "activity": "bounce", "preference": "third", "timing": "flexible", "recipient": "attacker@example.com"},
@@ -117,6 +127,18 @@ class SurveyEmailTests(unittest.TestCase):
         self.assertEqual(response.status_code, 503)
         self.assertEqual(response.json["missing_variables"], ["SURVEY_TO_EMAIL"])
         self.assertNotIn("SMTP_PASSWORD", response.get_data(as_text=True))
+
+    @patch("server.send_submission", side_effect=smtplib.SMTPAuthenticationError(535, b"private authentication response"))
+    def test_submission_endpoint_reports_safe_smtp_diagnostic(self, _send_submission_mock):
+        response = app.test_client().post(
+            "/api/submissions",
+            json={"language": "en", "activity": "bounce", "preference": "first", "timing": "weekend"},
+        )
+
+        self.assertEqual(response.status_code, 502)
+        self.assertEqual(response.json["error_code"], "smtp_authentication_rejected")
+        self.assertEqual(response.json["smtp_code"], 535)
+        self.assertNotIn("private authentication response", response.get_data(as_text=True))
 
     def test_submission_endpoint_allows_only_configured_origin(self):
         with patch.dict("os.environ", {"FRONTEND_ORIGIN": "https://example.github.io"}):
