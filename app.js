@@ -122,6 +122,7 @@ const paths = {
 };
 
 const state = { language: "en", step: 0, answers: [], emailStatus: "idle" };
+const apiBaseUrl = document.querySelector('meta[name="survey-api-base-url"]').content.trim().replace(/\/$/, "");
 const form = document.querySelector("#survey-form");
 const answerList = document.querySelector("#answer-list");
 const questionTitle = document.querySelector("#question-title");
@@ -266,7 +267,7 @@ async function sendSurveyEmail() {
   state.emailStatus = "sending";
   renderEmailStatus();
   try {
-    const response = await fetch("/api/submissions", {
+    const response = await fetch(`${apiBaseUrl}/api/submissions`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
