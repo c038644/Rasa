@@ -1,11 +1,13 @@
 import unittest
 from unittest.mock import patch
 
-from server import SMTPSettings, build_email, send_submission, validate_submission
+from server import REQUESTS_BY_CLIENT, SMTPSettings, app, build_email, send_submission, validate_submission
 
 
 class SurveyEmailTests(unittest.TestCase):
     def setUp(self):
+        app.config["TESTING"] = True
+        REQUESTS_BY_CLIENT.clear()
         self.settings = SMTPSettings(
             host="smtp.example.com",
             port=587,
@@ -62,6 +64,42 @@ class SurveyEmailTests(unittest.TestCase):
         sent_message = smtp.send_message.call_args.args[0]
         self.assertEqual(sent_message["To"], self.settings.recipient)
         self.assertIn("Bounce", sent_message.get_content())
+
+    @patch("server.send_submission")
+    def test_submission_endpoint_sends_valid_choices(self, send_submission_mock):
+        response = app.test_client().post(
+            "/api/submissions",
+            json={"language": "en", "activity": "camden", "preference": "second", "timing": "weekend"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json, {"status": "sent"})
+        send_submission_mock.assert_called_once_with(
+            {"language": "en", "activity": "camden", "preference": "second", "timing": "weekend"}
+        )
+
+    def test_submission_endpoint_rejects_invalid_choices(self):
+        response = app.test_client().post(
+            "/api/submissions",
+            json={"language": "en", "activity": "invalid", "preference": "first", "timing": "weekend"},
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+    def test_submission_endpoint_allows_only_configured_origin(self):
+        with patch.dict("os.environ", {"FRONTEND_ORIGIN": "https://example.github.io"}):
+            allowed = app.test_client().options(
+                "/api/submissions",
+                headers={"Origin": "https://example.github.io"},
+            )
+            rejected = app.test_client().options(
+                "/api/submissions",
+                headers={"Origin": "https://other.example"},
+            )
+
+        self.assertEqual(allowed.status_code, 204)
+        self.assertEqual(allowed.headers["Access-Control-Allow-Origin"], "https://example.github.io")
+        self.assertEqual(rejected.status_code, 403)
 
 
 if __name__ == "__main__":
