@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f4f2ec" />
+    <meta name="description" content="A short, branching survey to find a useful next step." />
+    <title>Common Ground | Find your next step</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="wordmark" href="#home" aria-label="Common Ground home">
+        <span class="mark" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span>common<span class="wordmark-light">ground</span></span>
+      </a>
+      <div class="topbar-right">
+        <span class="privacy-note" data-copy="private"></span>
+        <div class="language-switch" role="group" aria-label="Language">
+          <button class="language-button active" type="button" data-language="en" aria-pressed="true">EN</button>
+          <span aria-hidden="true">/</span>
+          <button class="language-button" type="button" data-language="lt" aria-pressed="false">LT</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="page-shell" id="home">
+      <aside class="story-panel" aria-label="A quiet path through the forest">
+        <img src="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1400&q=85" alt="A sunlit path winding through a green forest" />
+        <div class="story-wash"></div>
+        <div class="story-content">
+          <p class="eyebrow" data-copy="storyEyebrow"></p>
+          <p class="story-quote" data-copy="storyQuote"></p>
+          <span class="story-rule"></span>
+          <p class="story-caption" data-copy="storyCaption"></p>
+        </div>
+        <span class="image-credit">Photo: Unsplash</span>
+      </aside>
+
+      <section class="survey-panel" aria-labelledby="survey-heading">
+        <div class="survey-inner">
+          <div class="intro-row">
+            <div>
+              <p class="eyebrow intro-eyebrow" data-copy="introEyebrow"></p>
+              <h1 id="survey-heading" data-copy="heading"></h1>
+              <p class="intro-copy" data-copy="intro"></p>
+            </div>
+            <div class="step-count" aria-live="polite"><span id="step-current">01</span><span class="step-divider">/</span><span id="step-total">03</span></div>
+          </div>
+
+          <div class="progress-track" role="progressbar" aria-label="Survey progress" aria-valuemin="1" aria-valuemax="3" aria-valuenow="1">
+            <span class="progress-fill"></span>
+          </div>
+
+          <form id="survey-form" novalidate>
+            <fieldset class="question-fieldset">
+              <legend id="question-title"></legend>
+              <p id="question-hint" class="question-hint"></p>
+              <div id="answer-list" class="answer-list"></div>
+            </fieldset>
+            <p id="form-error" class="form-error" role="alert" hidden></p>
+            <div class="form-footer">
+              <button id="back-button" class="back-button" type="button" disabled>
+                <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4.5 7 10l5.5 5.5M7.5 10h8" /></svg>
+                <span data-copy="back"></span>
+              </button>
+              <button id="continue-button" class="continue-button" type="submit">
+                <span data-copy="continue"></span>
+                <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7.5 4.5 13 10l-5.5 5.5M12.5 10h-8" /></svg>
+              </button>
+            </div>
+          </form>
+
+          <section id="completion" class="completion" aria-live="polite" hidden>
+            <div class="completion-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32"><path d="m8 16.5 5.3 5.3L24.5 10" /></svg>
+            </div>
+            <p class="eyebrow" data-copy="completeEyebrow"></p>
+            <h2 data-copy="completeTitle"></h2>
+            <p id="completion-copy" class="completion-copy"></p>
+            <div id="answer-summary" class="answer-summary"></div>
+            <button id="restart-button" class="restart-button" type="button">
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M16 9a6 6 0 0 0-10.6-3L4 7.5M4 4v3.5h3.5M4 11a6 6 0 0 0 10.6 3L16 12.5M16 16v-3.5h-3.5" /></svg>
+              <span data-copy="restart"></span>
+            </button>
+          </section>
+
+          <footer class="survey-footer">
+            <span class="footer-dot" aria-hidden="true"></span>
+            <span data-copy="footer"></span>
+          </footer>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
