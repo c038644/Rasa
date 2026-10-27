@@ -1,23 +1,18 @@
-import smtplib
+import json
 import unittest
 from unittest.mock import patch
 
-from server import REQUESTS_BY_CLIENT, MailConfigurationError, SMTPSettings, app, build_email, load_smtp_settings, send_submission, smtp_failure_diagnostics, validate_submission
+from server import REQUESTS_BY_CLIENT, EmailConfigurationError, EmailDeliveryError, ResendSettings, app, build_email, load_resend_settings, resend_http_diagnostics, send_submission, validate_submission
 
 
 class SurveyEmailTests(unittest.TestCase):
     def setUp(self):
         app.config["TESTING"] = True
         REQUESTS_BY_CLIENT.clear()
-        self.settings = SMTPSettings(
-            host="smtp.example.com",
-            port=587,
+        self.settings = ResendSettings(
+            api_key="re_test_key",
             sender="survey@example.com",
             recipient="organiser@example.com",
-            username=None,
-            password=None,
-            use_ssl=False,
-            starttls=True,
         )
 
     def test_builds_email_for_selected_activity(self):
@@ -26,9 +21,10 @@ class SurveyEmailTests(unittest.TestCase):
             self.settings,
         )
 
-        self.assertEqual(message["To"], "organiser@example.com")
-        self.assertIn("Camden Market", message.get_content())
-        self.assertIn("A weekend", message.get_content())
+        self.assertEqual(message["to"], ["organiser@example.com"])
+        self.assertEqual(message["from"], "survey@example.com")
+        self.assertIn("Camden Market", message["text"])
+        self.assertIn("A weekend", message["text"])
 
     def test_builds_lithuanian_email(self):
         message = build_email(
@@ -36,41 +32,28 @@ class SurveyEmailTests(unittest.TestCase):
             self.settings,
         )
 
-        self.assertIn("Naujas Londono", message["Subject"])
-        self.assertIn("Strateginio iššūkio", message.get_content())
-        self.assertIn("Darbo dienos vakarą", message.get_content())
+        self.assertIn("Naujas Londono", message["subject"])
+        self.assertIn("Strateginio iššūkio", message["text"])
+        self.assertIn("Darbo dienos vakarą", message["text"])
 
     def test_rejects_unknown_choices(self):
         with self.assertRaises(ValueError):
             validate_submission({"language": "en", "activity": "external", "preference": "first", "timing": "weekend"})
 
     @patch.dict("os.environ", {}, clear=True)
-    def test_reports_exact_missing_required_mail_settings(self):
-        with self.assertRaises(MailConfigurationError) as caught:
-            load_smtp_settings()
+    def test_reports_exact_missing_resend_settings(self):
+        with self.assertRaises(EmailConfigurationError) as caught:
+            load_resend_settings()
 
         self.assertEqual(
             caught.exception.missing_variables,
-            ("SMTP_HOST", "SMTP_FROM_EMAIL", "SURVEY_TO_EMAIL"),
+            ("RESEND_API_KEY", "RESEND_FROM_EMAIL", "SURVEY_TO_EMAIL"),
         )
         self.assertNotIn("password", str(caught.exception).lower())
 
-    @patch.dict("os.environ", {"SMTP_HOST": "smtp.example.com", "SMTP_FROM_EMAIL": "survey@example.com", "SURVEY_TO_EMAIL": "organiser@example.com", "SMTP_USERNAME": "survey@example.com"}, clear=True)
-    def test_reports_missing_password_without_exposing_credentials(self):
-        with self.assertRaises(MailConfigurationError) as caught:
-            load_smtp_settings()
-
-        self.assertEqual(caught.exception.missing_variables, ("SMTP_PASSWORD",))
-        self.assertNotIn("survey@example.com", str(caught.exception))
-
-    def test_classifies_smtp_authentication_failure_without_exposing_response(self):
-        error = smtplib.SMTPAuthenticationError(535, b"private authentication response")
-
-        error_code, details, smtp_code = smtp_failure_diagnostics(error)
-
-        self.assertEqual(error_code, "smtp_authentication_rejected")
-        self.assertEqual(smtp_code, 535)
-        self.assertNotIn("private", details)
+    def test_classifies_resend_api_failures(self):
+        self.assertEqual(resend_http_diagnostics(401)[0], "resend_api_key_rejected")
+        self.assertEqual(resend_http_diagnostics(422)[0], "resend_sender_unverified")
 
     def test_ignores_client_supplied_recipient(self):
         message = build_email(
@@ -80,19 +63,20 @@ class SurveyEmailTests(unittest.TestCase):
 
         self.assertEqual(message["To"], "organiser@example.com")
 
-    @patch("server.load_smtp_settings")
-    @patch("server.smtplib.SMTP")
-    def test_sends_valid_response_through_configured_smtp(self, smtp_factory, settings_loader):
-        settings_loader.return_value = self.settings
-        smtp = smtp_factory.return_value.__enter__.return_value
+    @patch.dict("os.environ", {"RESEND_API_KEY": "re_test_key", "RESEND_FROM_EMAIL": "survey@example.com", "SURVEY_TO_EMAIL": "organiser@example.com"}, clear=True)
+    @patch("server.urlopen")
+    def test_sends_valid_response_through_resend_api(self, urlopen_mock):
+        response = urlopen_mock.return_value.__enter__.return_value
+        response.status = 201
 
         send_submission({"language": "en", "activity": "bounce", "preference": "second", "timing": "weekend"})
 
-        smtp_factory.assert_called_once_with(self.settings.host, self.settings.port, timeout=15)
-        smtp.starttls.assert_called_once()
-        sent_message = smtp.send_message.call_args.args[0]
-        self.assertEqual(sent_message["To"], self.settings.recipient)
-        self.assertIn("Bounce", sent_message.get_content())
+        request = urlopen_mock.call_args.args[0]
+        self.assertEqual(request.full_url, "https://api.resend.com/emails")
+        self.assertEqual(request.get_header("Authorization"), "Bearer re_test_key")
+        email_payload = json.loads(request.data)
+        self.assertEqual(email_payload["to"], ["organiser@example.com"])
+        self.assertIn("Bounce", email_payload["text"])
 
     @patch("server.send_submission")
     def test_submission_endpoint_sends_valid_choices(self, send_submission_mock):
@@ -115,30 +99,30 @@ class SurveyEmailTests(unittest.TestCase):
 
         self.assertEqual(response.status_code, 400)
 
-    @patch("server.send_submission", side_effect=MailConfigurationError(
-        "Required email settings are missing.", missing_variables=("SURVEY_TO_EMAIL",)
+    @patch("server.send_submission", side_effect=EmailConfigurationError(
+        "Required Resend settings are missing.", missing_variables=("RESEND_API_KEY",)
     ))
-    def test_submission_endpoint_identifies_missing_mail_variable(self, _send_submission_mock):
+    def test_submission_endpoint_identifies_missing_resend_variable(self, _send_submission_mock):
         response = app.test_client().post(
             "/api/submissions",
             json={"language": "en", "activity": "bounce", "preference": "first", "timing": "weekend"},
         )
 
         self.assertEqual(response.status_code, 503)
-        self.assertEqual(response.json["missing_variables"], ["SURVEY_TO_EMAIL"])
-        self.assertNotIn("SMTP_PASSWORD", response.get_data(as_text=True))
+        self.assertEqual(response.json["missing_variables"], ["RESEND_API_KEY"])
+        self.assertNotIn("re_test_key", response.get_data(as_text=True))
 
-    @patch("server.send_submission", side_effect=smtplib.SMTPAuthenticationError(535, b"private authentication response"))
-    def test_submission_endpoint_reports_safe_smtp_diagnostic(self, _send_submission_mock):
+    @patch("server.send_submission", side_effect=EmailDeliveryError("resend_api_key_rejected", "Resend rejected the API key.", 401))
+    def test_submission_endpoint_reports_safe_resend_diagnostic(self, _send_submission_mock):
         response = app.test_client().post(
             "/api/submissions",
             json={"language": "en", "activity": "bounce", "preference": "first", "timing": "weekend"},
         )
 
         self.assertEqual(response.status_code, 502)
-        self.assertEqual(response.json["error_code"], "smtp_authentication_rejected")
-        self.assertEqual(response.json["smtp_code"], 535)
-        self.assertNotIn("private authentication response", response.get_data(as_text=True))
+        self.assertEqual(response.json["error_code"], "resend_api_key_rejected")
+        self.assertEqual(response.json["provider_status"], 401)
+        self.assertNotIn("re_test_key", response.get_data(as_text=True))
 
     def test_submission_endpoint_allows_only_configured_origin(self):
         with patch.dict("os.environ", {"FRONTEND_ORIGIN": "https://example.github.io"}):
