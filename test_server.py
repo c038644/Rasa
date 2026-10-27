@@ -55,6 +55,29 @@ class SurveyEmailTests(unittest.TestCase):
         self.assertEqual(resend_http_diagnostics(401)[0], "resend_api_key_rejected")
         self.assertEqual(resend_http_diagnostics(422)[0], "resend_sender_unverified")
 
+    def test_classifies_resend_test_recipient_403_without_leaking_address(self):
+        response = json.dumps({
+            "name": "validation_error",
+            "message": "You can only send testing emails to your own email address (secret@yahoo.com).",
+        }).encode("utf-8")
+
+        error_code, details = resend_http_diagnostics(403, response)
+
+        self.assertEqual(error_code, "resend_test_recipient_restricted")
+        self.assertIn("Verify a sender domain", details)
+        self.assertNotIn("secret@yahoo.com", details)
+
+    def test_classifies_unverified_resend_domain(self):
+        response = json.dumps({
+            "name": "validation_error",
+            "message": "The example.com domain is not verified. Please add and verify your domain.",
+        }).encode("utf-8")
+
+        error_code, details = resend_http_diagnostics(403, response)
+
+        self.assertEqual(error_code, "resend_domain_unverified")
+        self.assertIn("RESEND_FROM_EMAIL", details)
+
     def test_ignores_client_supplied_recipient(self):
         message = build_email(
             {"language": "en", "activity": "bounce", "preference": "third", "timing": "flexible", "recipient": "attacker@example.com"},
