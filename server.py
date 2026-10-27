@@ -162,7 +162,7 @@ def send_submission(payload: Any) -> None:
                     response.status,
                 )
     except HTTPError as error:
-        error_code, details = resend_http_diagnostics(error.code)
+        error_code, details = resend_http_diagnostics(error.code, error.read())
         raise EmailDeliveryError(error_code, details, error.code) from error
     except (TimeoutError, URLError, OSError) as error:
         raise EmailDeliveryError(
@@ -178,11 +178,29 @@ class EmailDeliveryError(Exception):
         self.http_status = http_status
 
 
-def resend_http_diagnostics(status: int) -> tuple[str, str]:
+def resend_http_diagnostics(status: int, response_body: bytes = b"") -> tuple[str, str]:
+    try:
+        response_data = json.loads(response_body.decode("utf-8"))
+        provider_message = str(response_data.get("message", "")).lower()
+        provider_name = str(response_data.get("name", "")).lower()
+    except (UnicodeDecodeError, json.JSONDecodeError, AttributeError):
+        provider_message = ""
+        provider_name = ""
+
+    if status == 403:
+        if "testing emails to your own email" in provider_message or "onboarding@resend.dev" in provider_message:
+            return "resend_test_recipient_restricted", "Resend's test sender can only deliver to the Resend account owner's email. Verify a sender domain to send to other recipients."
+        if "domain" in provider_message and ("not verified" in provider_message or "verify your domain" in provider_message):
+            return "resend_domain_unverified", "The domain in RESEND_FROM_EMAIL is not verified in Resend. Verify it and use an address on that domain."
+        if "suspended" in provider_message:
+            return "resend_api_key_suspended", "Resend suspended this API key. Check the Resend dashboard or contact Resend support."
+        if "api key is not active" in provider_message:
+            return "resend_api_key_inactive", "This Resend API key is inactive. Create or activate a key in the Resend dashboard."
+        if "scope" in provider_message or "permission" in provider_message or provider_name == "invalid_permission":
+            return "resend_permission_denied", "Resend denied this API key's permissions. Check its access settings."
+        return "resend_permission_denied", "Resend denied this request. Check API key permissions and account status."
     if status == 401:
         return "resend_api_key_rejected", "Resend rejected the API key. Check RESEND_API_KEY."
-    if status == 403:
-        return "resend_permission_denied", "Resend denied this request. Check API key permissions and account status."
     if status == 422:
         return "resend_sender_unverified", "Resend rejected the sender or recipient. Verify the sender domain and check recipient restrictions."
     if status == 429:
