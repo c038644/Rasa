@@ -42,6 +42,7 @@ const copy = {
     emailResendRejected: "Resend rejected the request. Check the sender address and Resend account configuration.",
     emailProviderStatus: "Resend HTTP status: {status}.",
     emailProviderErrorType: "Resend error type: {type}.",
+    emailProviderMessage: "Resend details: {message}",
     emailBadSubmission: "The API rejected these choices. Check that GitHub Pages and Render are using matching app versions.",
     emailApiUnreachable: "The email API could not be reached. Check the Render URL and CORS settings.",
     emailHttpError: "The email API returned HTTP {status}. Check the Render logs.",
@@ -122,6 +123,7 @@ const copy = {
     emailResendRejected: "Resend atmetė užklausą. Patikrinkite siuntėjo adresą ir Resend paskyros konfigūraciją.",
     emailProviderStatus: "Resend HTTP būsena: {status}.",
     emailProviderErrorType: "Resend klaidos tipas: {type}.",
+    emailProviderMessage: "Resend informacija: {message}",
     emailBadSubmission: "API atmetė šiuos pasirinkimus. Patikrinkite, ar GitHub Pages ir Render naudoja suderintas programos versijas.",
     emailApiUnreachable: "Nepavyko pasiekti el. pašto API. Patikrinkite Render adresą ir CORS nustatymus.",
     emailHttpError: "El. pašto API grąžino HTTP {status} klaidą. Patikrinkite Render žurnalus.",
@@ -167,7 +169,7 @@ const paths = {
   draughts: 2
 };
 
-const state = { language: "en", step: 0, answers: [], emailStatus: "idle", emailFailureKey: null, emailFailureStatus: null, emailFailureVariables: [], emailProviderStatus: null, emailProviderError: null };
+const state = { language: "en", step: 0, answers: [], emailStatus: "idle", emailFailureKey: null, emailFailureStatus: null, emailFailureVariables: [], emailProviderStatus: null, emailProviderError: null, emailProviderMessage: null };
 const apiBaseUrl = document.querySelector('meta[name="survey-api-base-url"]').content.trim().replace(/\/$/, "");
 const form = document.querySelector("#survey-form");
 const answerList = document.querySelector("#answer-list");
@@ -310,11 +312,14 @@ function renderEmailStatus() {
   const providerError = state.emailProviderError
     ? ` ${currentCopy().emailProviderErrorType.replace("{type}", state.emailProviderError)}`
     : "";
+  const providerMessage = state.emailProviderMessage
+    ? ` ${currentCopy().emailProviderMessage.replace("{message}", state.emailProviderMessage)}`
+    : "";
   const statusText = {
     idle: "",
     sending: currentCopy().emailSending,
     sent: currentCopy().emailSent,
-    failed: `${failedText}${providerStatus}${providerError}`
+    failed: `${failedText}${providerStatus}${providerError}${providerMessage}`
   };
   document.querySelector("#email-status").textContent = statusText[state.emailStatus];
   document.querySelector("#email-retry").hidden = state.emailStatus !== "failed";
@@ -328,6 +333,7 @@ async function sendSurveyEmail() {
   state.emailFailureVariables = [];
   state.emailProviderStatus = null;
   state.emailProviderError = null;
+  state.emailProviderMessage = null;
   renderEmailStatus();
   try {
     if (!apiBaseUrl && location.hostname.endsWith("github.io")) {
@@ -350,6 +356,7 @@ async function sendSurveyEmail() {
       const errorPayload = await response.json().catch(() => ({}));
       state.emailProviderStatus = errorPayload.provider_status || null;
       state.emailProviderError = errorPayload.provider_error || null;
+      state.emailProviderMessage = errorPayload.provider_message || null;
       state.emailFailureKey = {
         400: "emailBadSubmission",
         403: "emailOriginRejected",
@@ -439,6 +446,7 @@ document.querySelector("#restart-button").addEventListener("click", () => {
   state.emailFailureVariables = [];
   state.emailProviderStatus = null;
   state.emailProviderError = null;
+  state.emailProviderMessage = null;
   showSurvey();
 });
 
