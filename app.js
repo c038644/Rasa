@@ -30,6 +30,7 @@ const copy = {
     emailResendFailed: "Resend could not deliver your choices. Check the Resend configuration.",
     emailResendApiKey: "Resend rejected RESEND_API_KEY. Check that the key is valid and active.",
     emailResendPermission: "Resend denied this API key’s permissions. Check its access settings.",
+    emailResendKeyDomain: "The API key is restricted to a different domain. Set its domain restriction to the verified domain used in RESEND_FROM_EMAIL, or create a Sending access key for that domain.",
     emailResendTestRecipient: "Resend’s test sender can only deliver to the Resend account owner. Verify a sender domain to send to your Yahoo inbox.",
     emailResendDomain: "The domain in RESEND_FROM_EMAIL is not verified in Resend. Verify it, then use a sender address on that domain.",
     emailResendApiKeyInactive: "This Resend API key is inactive. Create or activate a key in the Resend dashboard.",
@@ -109,6 +110,7 @@ const copy = {
     emailResendFailed: "Resend nepavyko išsiųsti jūsų pasirinkimų. Patikrinkite Resend konfigūraciją.",
     emailResendApiKey: "Resend atmetė RESEND_API_KEY. Patikrinkite, ar raktas galiojantis ir aktyvus.",
     emailResendPermission: "Resend neleido naudoti šio API rakto. Patikrinkite jo prieigos teises.",
+    emailResendKeyDomain: "Šis API raktas apribotas kitu domenu. Nustatykite jo apribojimą pagal patvirtintą RESEND_FROM_EMAIL domeną arba sukurkite to domeno siuntimo prieigos raktą.",
     emailResendTestRecipient: "Resend bandomuoju siuntėju gali siųsti tik paskyros savininkui. Norėdami siųsti į Yahoo paštą, patvirtinkite siuntėjo domeną.",
     emailResendDomain: "RESEND_FROM_EMAIL domenas Resend nepatvirtintas. Patvirtinkite jį ir naudokite siuntėjo adresą iš šio domeno.",
     emailResendApiKeyInactive: "Resend API raktas neaktyvus. Resend skydelyje sukurkite arba aktyvinkite raktą.",
@@ -366,6 +368,7 @@ async function sendSurveyEmail() {
         state.emailFailureKey = {
           resend_api_key_rejected: "emailResendApiKey",
           resend_permission_denied: "emailResendPermission",
+          resend_api_key_domain_mismatch: "emailResendKeyDomain",
           resend_test_recipient_restricted: "emailResendTestRecipient",
           resend_domain_unverified: "emailResendDomain",
           resend_api_key_inactive: "emailResendApiKeyInactive",
