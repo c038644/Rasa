@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import time
 from collections import deque
 from dataclasses import dataclass
@@ -162,8 +163,8 @@ def send_submission(payload: Any) -> None:
                     response.status,
                 )
     except HTTPError as error:
-        error_code, details = resend_http_diagnostics(error.code, error.read())
-        raise EmailDeliveryError(error_code, details, error.code) from error
+        error_code, details, provider_error = resend_http_diagnostics(error.code, error.read())
+        raise EmailDeliveryError(error_code, details, error.code, provider_error) from error
     except (TimeoutError, URLError, OSError) as error:
         raise EmailDeliveryError(
             "resend_connection_failed",
@@ -172,13 +173,14 @@ def send_submission(payload: Any) -> None:
 
 
 class EmailDeliveryError(Exception):
-    def __init__(self, error_code: str, message: str, http_status: int | None = None) -> None:
+    def __init__(self, error_code: str, message: str, http_status: int | None = None, provider_error: str | None = None) -> None:
         super().__init__(message)
         self.error_code = error_code
         self.http_status = http_status
+        self.provider_error = provider_error
 
 
-def resend_http_diagnostics(status: int, response_body: bytes = b"") -> tuple[str, str]:
+def resend_http_diagnostics(status: int, response_body: bytes = b"") -> tuple[str, str, str | None]:
     try:
         response_data = json.loads(response_body.decode("utf-8"))
         provider_message = str(response_data.get("message", "")).lower()
@@ -186,28 +188,31 @@ def resend_http_diagnostics(status: int, response_body: bytes = b"") -> tuple[st
     except (UnicodeDecodeError, json.JSONDecodeError, AttributeError):
         provider_message = ""
         provider_name = ""
+    if not re.fullmatch(r"[a-z0-9_]{1,64}", provider_name):
+        provider_name = ""
+    safe_provider_name = provider_name or None
 
     if status == 403:
         if "testing emails to your own email" in provider_message or "onboarding@resend.dev" in provider_message:
-            return "resend_test_recipient_restricted", "Resend's test sender can only deliver to the Resend account owner's email. Verify a sender domain to send to other recipients."
+            return "resend_test_recipient_restricted", "Resend's test sender can only deliver to the Resend account owner's email. Verify a sender domain to send to other recipients.", safe_provider_name
         if "domain" in provider_message and ("not verified" in provider_message or "verify your domain" in provider_message):
-            return "resend_domain_unverified", "The domain in RESEND_FROM_EMAIL is not verified in Resend. Verify it and use an address on that domain."
+            return "resend_domain_unverified", "The domain in RESEND_FROM_EMAIL is not verified in Resend. Verify it and use an address on that domain.", safe_provider_name
         if "suspended" in provider_message:
-            return "resend_api_key_suspended", "Resend suspended this API key. Check the Resend dashboard or contact Resend support."
+            return "resend_api_key_suspended", "Resend suspended this API key. Check the Resend dashboard or contact Resend support.", safe_provider_name
         if "api key is not active" in provider_message:
-            return "resend_api_key_inactive", "This Resend API key is inactive. Create or activate a key in the Resend dashboard."
+            return "resend_api_key_inactive", "This Resend API key is inactive. Create or activate a key in the Resend dashboard.", safe_provider_name
         if "scope" in provider_message or "permission" in provider_message or provider_name == "invalid_permission":
-            return "resend_permission_denied", "Resend denied this API key's permissions. Check its access settings."
-        return "resend_permission_denied", "Resend denied this request. Check API key permissions and account status."
+            return "resend_permission_denied", "Resend denied this API key's permissions. Check its access settings.", safe_provider_name
+        return "resend_forbidden", "Resend denied this request. Check the Resend error type for the specific restriction.", safe_provider_name
     if status == 401:
-        return "resend_api_key_rejected", "Resend rejected the API key. Check RESEND_API_KEY."
+        return "resend_api_key_rejected", "Resend rejected the API key. Check RESEND_API_KEY.", safe_provider_name
     if status == 422:
-        return "resend_sender_unverified", "Resend rejected the sender or recipient. Verify the sender domain and check recipient restrictions."
+        return "resend_sender_unverified", "Resend rejected the sender or recipient. Verify the sender domain and check recipient restrictions.", safe_provider_name
     if status == 429:
-        return "resend_rate_limited", "Resend rate-limited the request. Check your account quota and retry later."
+        return "resend_rate_limited", "Resend rate-limited the request. Check your account quota and retry later.", safe_provider_name
     if status >= 500:
-        return "resend_service_unavailable", "Resend is temporarily unavailable. Retry later."
-    return "resend_request_rejected", "Resend rejected the request. Check sender configuration and API settings."
+        return "resend_service_unavailable", "Resend is temporarily unavailable. Retry later.", safe_provider_name
+    return "resend_request_rejected", "Resend rejected the request. Check sender configuration and API settings.", safe_provider_name
 
 
 def is_rate_limited(client_ip: str) -> bool:
@@ -296,8 +301,19 @@ def submit_survey():
             invalid_variables=error.invalid_variables,
         ), 503
     except EmailDeliveryError as error:
-        app.logger.warning("Survey email delivery failed: category=%s provider_status=%s", error.error_code, error.http_status)
-        return jsonify(error="Email delivery failed", error_code=error.error_code, details=str(error), provider_status=error.http_status), 502
+        app.logger.warning(
+            "Survey email delivery failed: category=%s provider_status=%s provider_error=%s",
+            error.error_code,
+            error.http_status,
+            error.provider_error or "unknown",
+        )
+        return jsonify(
+            error="Email delivery failed",
+            error_code=error.error_code,
+            details=str(error),
+            provider_status=error.http_status,
+            provider_error=error.provider_error,
+        ), 502
 
     return jsonify(status="sent"), 200
 
