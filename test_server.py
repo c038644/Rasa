@@ -88,6 +88,20 @@ class SurveyEmailTests(unittest.TestCase):
         self.assertEqual(error_code, "resend_forbidden")
         self.assertEqual(provider_error, "some_new_error")
 
+    def test_classifies_domain_restricted_api_key(self):
+        response = json.dumps({
+            "error": {
+                "type": "validation_error",
+                "message": "API key is restricted to domain other.example and cannot send from mail.example.eu.",
+            }
+        }).encode("utf-8")
+
+        error_code, details, provider_error = resend_http_diagnostics(403, response)
+
+        self.assertEqual(error_code, "resend_api_key_domain_mismatch")
+        self.assertEqual(provider_error, "validation_error")
+        self.assertIn("RESEND_FROM_EMAIL", details)
+
     def test_ignores_client_supplied_recipient(self):
         message = build_email(
             {"language": "en", "activity": "bounce", "preference": "third", "timing": "flexible", "recipient": "attacker@example.com"},
