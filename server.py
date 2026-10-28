@@ -183,16 +183,28 @@ class EmailDeliveryError(Exception):
 def resend_http_diagnostics(status: int, response_body: bytes = b"") -> tuple[str, str, str | None]:
     try:
         response_data = json.loads(response_body.decode("utf-8"))
-        provider_message = str(response_data.get("message", "")).lower()
-        provider_name = str(response_data.get("name", "")).lower()
-    except (UnicodeDecodeError, json.JSONDecodeError, AttributeError):
+        nested_error = response_data.get("error")
+        nested_data = nested_error if isinstance(nested_error, dict) else {}
+        provider_message = str(response_data.get("message") or nested_data.get("message") or nested_error or "").lower()
+        provider_name = str(
+            response_data.get("name")
+            or response_data.get("type")
+            or response_data.get("code")
+            or nested_data.get("name")
+            or nested_data.get("type")
+            or nested_data.get("code")
+            or ""
+        ).lower()
+    except (UnicodeDecodeError, json.JSONDecodeError, AttributeError, TypeError):
         provider_message = ""
         provider_name = ""
     if not re.fullmatch(r"[a-z0-9_]{1,64}", provider_name):
         provider_name = ""
-    safe_provider_name = provider_name or None
+    safe_provider_name = provider_name or ("unrecognized_403" if status == 403 else None)
 
     if status == 403:
+        if "api key" in provider_message and "domain" in provider_message and any(word in provider_message for word in ("restrict", "allow", "match")):
+            return "resend_api_key_domain_mismatch", "The API key is restricted to a different domain. Edit its domain restriction to match RESEND_FROM_EMAIL, or create a Sending access key for the verified sender domain.", safe_provider_name
         if "testing emails to your own email" in provider_message or "onboarding@resend.dev" in provider_message:
             return "resend_test_recipient_restricted", "Resend's test sender can only deliver to the Resend account owner's email. Verify a sender domain to send to other recipients.", safe_provider_name
         if "domain" in provider_message and ("not verified" in provider_message or "verify your domain" in provider_message):
