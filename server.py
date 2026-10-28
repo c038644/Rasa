@@ -185,12 +185,17 @@ class EmailDeliveryError(Exception):
 
 def sanitize_provider_message(response_body: bytes) -> str | None:
     try:
-        payload = json.loads(response_body.decode("utf-8"))
-        nested_error = payload.get("error")
-        nested_data = nested_error if isinstance(nested_error, dict) else {}
-        message = str(payload.get("message") or nested_data.get("message") or nested_error or "")
-    except (UnicodeDecodeError, json.JSONDecodeError, AttributeError, TypeError):
+        response_text = response_body.decode("utf-8")
+    except UnicodeDecodeError:
         return None
+    try:
+        payload = json.loads(response_text)
+    except json.JSONDecodeError:
+        message = response_text
+    else:
+        nested_error = payload.get("error") if isinstance(payload, dict) else None
+        nested_data = nested_error if isinstance(nested_error, dict) else {}
+        message = str(payload.get("message") or nested_data.get("message") or nested_error or "") if isinstance(payload, dict) else response_text
     message = re.sub(r"[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}", "[email]", message, flags=re.IGNORECASE)
     message = re.sub(r"\bre_[A-Za-z0-9_-]+\b", "[api-key]", message)
     message = re.sub(r"[\r\n\t]+", " ", message).strip()
@@ -331,10 +336,11 @@ def submit_survey():
         ), 503
     except EmailDeliveryError as error:
         app.logger.warning(
-            "Survey email delivery failed: category=%s provider_status=%s provider_error=%s",
+            "Survey email delivery failed: category=%s provider_status=%s provider_error=%s provider_message=%s",
             error.error_code,
             error.http_status,
             error.provider_error or "unknown",
+            error.provider_message or "unavailable",
         )
         return jsonify(
             error="Email delivery failed",
