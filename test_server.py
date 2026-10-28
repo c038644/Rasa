@@ -2,7 +2,7 @@ import json
 import unittest
 from unittest.mock import patch
 
-from server import REQUESTS_BY_CLIENT, EmailConfigurationError, EmailDeliveryError, ResendSettings, app, build_email, load_resend_settings, resend_http_diagnostics, send_submission, validate_submission
+from server import REQUESTS_BY_CLIENT, EmailConfigurationError, EmailDeliveryError, ResendSettings, app, build_email, load_resend_settings, resend_http_diagnostics, sanitize_provider_message, send_submission, validate_submission
 
 
 class SurveyEmailTests(unittest.TestCase):
@@ -102,6 +102,26 @@ class SurveyEmailTests(unittest.TestCase):
         self.assertEqual(provider_error, "validation_error")
         self.assertIn("RESEND_FROM_EMAIL", details)
 
+    def test_sanitizes_provider_message_without_losing_reason(self):
+        response = json.dumps({
+            "message": "Domain mail.example.eu is not verified for person@yahoo.com using re_secretValue123.",
+        }).encode("utf-8")
+
+        message = sanitize_provider_message(response)
+
+        self.assertIn("mail.example.eu is not verified", message)
+        self.assertIn("[email]", message)
+        self.assertIn("[api-key]", message)
+        self.assertNotIn("person@yahoo.com", message)
+        self.assertNotIn("re_secretValue123", message)
+
+    def test_sanitizes_plain_text_provider_message(self):
+        message = sanitize_provider_message(b"Domain denied for person@yahoo.com; key re_secretValue123.")
+
+        self.assertIn("Domain denied", message)
+        self.assertIn("[email]", message)
+        self.assertIn("[api-key]", message)
+
     def test_ignores_client_supplied_recipient(self):
         message = build_email(
             {"language": "en", "activity": "bounce", "preference": "third", "timing": "flexible", "recipient": "attacker@example.com"},
@@ -121,6 +141,7 @@ class SurveyEmailTests(unittest.TestCase):
         request = urlopen_mock.call_args.args[0]
         self.assertEqual(request.full_url, "https://api.resend.com/emails")
         self.assertEqual(request.get_header("Authorization"), "Bearer re_test_key")
+        self.assertEqual(request.get_header("User-agent"), "common-ground-survey/1.0 (+https://github.com/c038644/Rasa)")
         email_payload = json.loads(request.data)
         self.assertEqual(email_payload["to"], ["organiser@example.com"])
         self.assertIn("Bounce", email_payload["text"])
@@ -159,7 +180,9 @@ class SurveyEmailTests(unittest.TestCase):
         self.assertEqual(response.json["missing_variables"], ["RESEND_API_KEY"])
         self.assertNotIn("re_test_key", response.get_data(as_text=True))
 
-    @patch("server.send_submission", side_effect=EmailDeliveryError("resend_api_key_rejected", "Resend rejected the API key.", 401))
+    @patch("server.send_submission", side_effect=EmailDeliveryError(
+        "resend_forbidden", "Resend denied the request.", 403, "unrecognized_403", "Domain [email] is not verified."
+    ))
     def test_submission_endpoint_reports_safe_resend_diagnostic(self, _send_submission_mock):
         response = app.test_client().post(
             "/api/submissions",
@@ -167,8 +190,10 @@ class SurveyEmailTests(unittest.TestCase):
         )
 
         self.assertEqual(response.status_code, 502)
-        self.assertEqual(response.json["error_code"], "resend_api_key_rejected")
-        self.assertEqual(response.json["provider_status"], 401)
+        self.assertEqual(response.json["error_code"], "resend_forbidden")
+        self.assertEqual(response.json["provider_status"], 403)
+        self.assertEqual(response.json["provider_error"], "unrecognized_403")
+        self.assertEqual(response.json["provider_message"], "Domain [email] is not verified.")
         self.assertNotIn("re_test_key", response.get_data(as_text=True))
 
     def test_submission_endpoint_allows_only_configured_origin(self):
