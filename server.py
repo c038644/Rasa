@@ -163,8 +163,10 @@ def send_submission(payload: Any) -> None:
                     response.status,
                 )
     except HTTPError as error:
-        error_code, details, provider_error = resend_http_diagnostics(error.code, error.read())
-        raise EmailDeliveryError(error_code, details, error.code, provider_error) from error
+        response_body = error.read()
+        error_code, details, provider_error = resend_http_diagnostics(error.code, response_body)
+        provider_message = sanitize_provider_message(response_body)
+        raise EmailDeliveryError(error_code, details, error.code, provider_error, provider_message) from error
     except (TimeoutError, URLError, OSError) as error:
         raise EmailDeliveryError(
             "resend_connection_failed",
@@ -173,11 +175,26 @@ def send_submission(payload: Any) -> None:
 
 
 class EmailDeliveryError(Exception):
-    def __init__(self, error_code: str, message: str, http_status: int | None = None, provider_error: str | None = None) -> None:
+    def __init__(self, error_code: str, message: str, http_status: int | None = None, provider_error: str | None = None, provider_message: str | None = None) -> None:
         super().__init__(message)
         self.error_code = error_code
         self.http_status = http_status
         self.provider_error = provider_error
+        self.provider_message = provider_message
+
+
+def sanitize_provider_message(response_body: bytes) -> str | None:
+    try:
+        payload = json.loads(response_body.decode("utf-8"))
+        nested_error = payload.get("error")
+        nested_data = nested_error if isinstance(nested_error, dict) else {}
+        message = str(payload.get("message") or nested_data.get("message") or nested_error or "")
+    except (UnicodeDecodeError, json.JSONDecodeError, AttributeError, TypeError):
+        return None
+    message = re.sub(r"[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}", "[email]", message, flags=re.IGNORECASE)
+    message = re.sub(r"\bre_[A-Za-z0-9_-]+\b", "[api-key]", message)
+    message = re.sub(r"[\r\n\t]+", " ", message).strip()
+    return message[:300] or None
 
 
 def resend_http_diagnostics(status: int, response_body: bytes = b"") -> tuple[str, str, str | None]:
@@ -325,6 +342,7 @@ def submit_survey():
             details=str(error),
             provider_status=error.http_status,
             provider_error=error.provider_error,
+            provider_message=error.provider_message,
         ), 502
 
     return jsonify(status="sent"), 200
