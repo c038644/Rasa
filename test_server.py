@@ -61,9 +61,10 @@ class SurveyEmailTests(unittest.TestCase):
             "message": "You can only send testing emails to your own email address (secret@yahoo.com).",
         }).encode("utf-8")
 
-        error_code, details = resend_http_diagnostics(403, response)
+        error_code, details, provider_error = resend_http_diagnostics(403, response)
 
         self.assertEqual(error_code, "resend_test_recipient_restricted")
+        self.assertEqual(provider_error, "validation_error")
         self.assertIn("Verify a sender domain", details)
         self.assertNotIn("secret@yahoo.com", details)
 
@@ -73,10 +74,19 @@ class SurveyEmailTests(unittest.TestCase):
             "message": "The example.com domain is not verified. Please add and verify your domain.",
         }).encode("utf-8")
 
-        error_code, details = resend_http_diagnostics(403, response)
+        error_code, details, provider_error = resend_http_diagnostics(403, response)
 
         self.assertEqual(error_code, "resend_domain_unverified")
+        self.assertEqual(provider_error, "validation_error")
         self.assertIn("RESEND_FROM_EMAIL", details)
+
+    def test_classifies_unrecognized_resend_403_without_claiming_permission_error(self):
+        response = json.dumps({"name": "some_new_error", "message": "A new restriction."}).encode("utf-8")
+
+        error_code, _details, provider_error = resend_http_diagnostics(403, response)
+
+        self.assertEqual(error_code, "resend_forbidden")
+        self.assertEqual(provider_error, "some_new_error")
 
     def test_ignores_client_supplied_recipient(self):
         message = build_email(
