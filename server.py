@@ -151,6 +151,7 @@ def send_submission(payload: Any) -> None:
         headers={
             "Authorization": f"Bearer {settings.api_key}",
             "Content-Type": "application/json",
+            "User-Agent": "common-ground-survey/1.0 (+https://github.com/c038644/Rasa)",
         },
         method="POST",
     )
