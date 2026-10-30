@@ -5,10 +5,10 @@ const copy = {
     imageAlt: "A lively London street in the evening",
     imageCredit: "Photo: Unsplash",
     private: "No sign-up needed",
-    storyEyebrow: "Make a London day of it",
-    storyQuote: "Good plans are better when shared.",
-    storyCaption: "Pick a mood. We’ll find your kind of get-together.",
-    introEyebrow: "A quick activity finder · about 1 minute",
+    storyEyebrow: "",
+    storyQuote: "",
+    storyCaption: "",
+    introEyebrow: "",
     heading: "Welcome to the Rasa Budrikaite appreciation home page",
     intro: "Dedicated to a truly incredible woman that I can't stop thinking about",
     back: "Back",
@@ -54,9 +54,9 @@ const copy = {
     firstHint: "Pick the idea you’d be most excited to do.",
     branches: {
       bounce: {
-        question: "What would make game night most fun?",
-        hint: "We’ll tune the plan to your group.",
-        answers: ["Easygoing games and a catch-up", "A little friendly competition", "Add food and drinks"]
+        question: "What would make evening more fun?",
+        hint: "",
+        answers: ["My date to cover the bill", "Scintillating and a laugh", "To be pulled close and gently kissed"]
       },
       camden: {
         question: "What sounds best for your Camden wander?",
@@ -70,9 +70,9 @@ const copy = {
       }
     },
     lastQuestion: "When would you like to go?",
-    lastHint: "Choose a time that works for your group.",
+    lastHint: "",
     lastAnswers: ["A weekday evening", "A weekend", "I’m flexible"],
-    firstAnswers: ["Ping-pong and games at Bounce", "Food, stalls and a canal walk at Camden Market", "Board games at Draughts"],
+    firstAnswers: ["Get to knew each other after work drinks", "Play a game of badminton (singles of course)", "Wildcard Choice - Go straight to date number three on a weekend away"],
     summaryLabels: ["Your outing", "Your vibe", "When"],
     recommendations: {
       bounce: { title: "Ping-pong at Bounce", location: "Farringdon or Old Street, London", description: "Book a table, pick up a paddle and turn a catch-up into a friendly rally. Check the venue for sessions and food options.", url: "https://www.bouncepingpong.com/" },
