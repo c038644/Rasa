@@ -59,20 +59,20 @@ const copy = {
         answers: ["My date to cover the bill", "Scintillating and a laugh", "To be pulled close and gently kissed"]
       },
       camden: {
-        question: "What sounds best for your Camden wander?",
-        hint: "There’s room to make this your own.",
-        answers: ["Sample a few food stalls", "Browse the market together", "Take a canal-side stroll"]
+        question: "What sounds best for your sporty date?",
+        hint: "",
+        answers: ["I'm a novice, I would like to learn", "I'm already a good player bring on the competition", "It's the taking part that counts"]
       },
       draughts: {
-        question: "What kind of board-game night are you after?",
-        hint: "Draughts has games for first-timers and enthusiasts alike.",
-        answers: ["Light, easy-to-learn games", "A strategic challenge", "Try something completely new"]
+        question: "Skip dates one and two and go straight date three on a city break weekend away",
+        hint: "Restaurants, culture and comprising sleeping arrangements await!",
+        answers: ["London", "Paris", "Brussels"]
       }
     },
     lastQuestion: "When would you like to go?",
     lastHint: "",
     lastAnswers: ["A weekday evening", "A weekend", "I’m flexible"],
-    firstAnswers: ["Get to knew each other after work drinks", "Play a game of badminton (singles of course)", "Wildcard Choice - Go straight to date number three on a weekend away"],
+    firstAnswers: ["Get to knew each other after work drinks", "Play a game of badminton (singles of course)", "Peter's Wildcard Choice"],
     summaryLabels: ["Your outing", "Your vibe", "When"],
     recommendations: {
       bounce: { title: "Ping-pong at Bounce", location: "Farringdon or Old Street, London", description: "Book a table, pick up a paddle and turn a catch-up into a friendly rally. Check the venue for sessions and food options.", url: "https://www.bouncepingpong.com/" },
