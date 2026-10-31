@@ -64,7 +64,7 @@ const copy = {
       drinks: {
         question: "What would make an after-work date feel right?",
         hint: "Pick the pace that feels comfortable.",
-        answers: ["A relaxed drink and easy conversation", "A riverside stroll", "To be pulled in close and kissed"]
+        answers: ["A relaxed drink and easy conversation", "To get to know Peter", "To be pulled in close and kissed"]
       },
       badminton: {
         question: "What kind of badminton date sounds fun?",
@@ -80,11 +80,11 @@ const copy = {
     lastQuestion: "When would you like to meet?",
     lastHint: "Choose a time that works for you both.",
     lastAnswers: ["A weekday evening", "A weekend", "I’m flexible"],
-    firstAnswers: ["After-work drinks and a riverside stroll", "A friendly one-on-one badminton match", "Peter’s wildcard: a weekend city break"],
+    firstAnswers: ["After-work drinks", "A friendly one-on-one badminton match", "Peter’s wildcard: a weekend city break"],
     summaryLabels: ["Date idea", "Your preference", "When"],
     cityBreakTitle: "A weekend city-break date in {city}",
     recommendations: {
-      drinks: { title: "After-work drinks and a riverside stroll", location: "South Bank, London", description: "Meet for a relaxed drink, then take a walk along the Thames and let the conversation set the pace.", url: "https://www.google.com/maps/search/?api=1&query=bars+South+Bank+London" },
+      drinks: { title: "After-work drinks", location: "South Bank, London", description: "Meet for a relaxed drink and let the conversation set the pace.", url: "https://www.google.com/maps/search/?api=1&query=bars+South+Bank+London" },
       badminton: { title: "A friendly singles badminton date", location: "Find a court in London", description: "Book a court, have a playful match, and let the winner choose your next stop.", url: "https://www.google.com/maps/search/?api=1&query=badminton+courts+London" },
       citybreak: { title: "A weekend city-break date", location: "Choose a city together", description: "Pick one neighbourhood, one shared activity, and leave room for a few spontaneous moments.", url: "https://www.google.com/maps/search/?api=1&query=weekend+city+break" }
     }
@@ -154,7 +154,7 @@ const copy = {
       drinks: {
         question: "Koks pasimatymas po darbo jums patiktų?",
         hint: "Pasirinkite jums patogų tempą.",
-        answers: ["Ramus gėrimas ir lengvas pokalbis", "Pasivaikščiojimas palei upę", "Būti pritrauktai arčiau ir pabučiuotai"]
+        answers: ["Ramus gėrimas ir lengvas pokalbis", "Norint pažinti Piterį", "Būti pritrauktai arčiau ir pabučiuotai"]
       },
       badminton: {
         question: "Koks badmintono pasimatymas skambėtų smagiai?",
@@ -174,7 +174,7 @@ const copy = {
     summaryLabels: ["Pasimatymo idėja", "Jūsų pageidavimai", "Kada"],
     cityBreakTitle: "Savaitgalio pasimatymas mieste: {city}",
     recommendations: {
-      drinks: { title: "Gėrimai po darbo ir pasivaikščiojimas palei upę", location: "South Bank, Londonas", description: "Susitikite jaukiam gėrimui, o tada pasivaikščiokite palei Temzę ir leiskite pokalbiui pakrypti savaime.", url: "https://www.google.com/maps/search/?api=1&query=bars+South+Bank+London" },
+      drinks: { title: "Gėrimai po darbo", location: "South Bank, Londonas", description: "Susitikite ramiai išgerti, o pokalbis pats padiktuos tempą", url: "https://www.google.com/maps/search/?api=1&query=bars+South+Bank+London" },
       badminton: { title: "Draugiškas badmintono mačas vienetais", location: "Pasirinkite aikštelę Londone", description: "Rezervuokite aikštelę, pažaiskite smagų mačą, o nugalėtojas tegul išrenka kitą sustojimą.", url: "https://www.google.com/maps/search/?api=1&query=badminton+courts+London" },
       citybreak: { title: "Savaitgalio pasimatymas kitame mieste", location: "Pasirinkite miestą kartu", description: "Išsirinkite vieną rajoną, vieną bendrą veiklą ir palikite vietos spontaniškoms akimirkoms.", url: "https://www.google.com/maps/search/?api=1&query=weekend+city+break" }
     }
