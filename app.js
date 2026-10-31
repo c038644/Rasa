@@ -73,7 +73,7 @@ const copy = {
       },
       citybreak: {
         question: "Which city would you choose for a weekend away?",
-        hint: "Culture, museums, restaurants and compromising sleeping arrangements!",
+        hint: "Culture, museums, restaurants and compromising sleeping arrangements would await!",
         answers: ["London", "Paris", "Brussels"]
       }
     },
@@ -163,7 +163,7 @@ const copy = {
       },
       citybreak: {
         question: "Kuriame mieste norėtumėte praleisti savaitgalį?",
-        hint: "Kultūra, muziejai, restoranai ir kompromisų reikalaujančios nakvynės sąlygos!",
+        hint: "Laukė kultūra, muziejai, restoranai ir kompromisų reikalaujančios miegojimo sąlygos.",
         answers: ["Londone", "Paryžiuje", "Briuselyje"]
       }
     },
