@@ -17,24 +17,36 @@ class SurveyEmailTests(unittest.TestCase):
 
     def test_builds_email_for_selected_activity(self):
         message = build_email(
-            {"language": "en", "activity": "camden", "preference": "first", "timing": "weekend"},
+            {"language": "en", "activity": "drinks", "preference": "first", "timing": "weekend", "comments": ["Quiet place, please", "Art and travel", "No peanuts"]},
             self.settings,
         )
 
         self.assertEqual(message["to"], ["organiser@example.com"])
         self.assertEqual(message["from"], "survey@example.com")
-        self.assertIn("Camden Market", message["text"])
+        self.assertIn("After-work drinks", message["text"])
         self.assertIn("A weekend", message["text"])
+        self.assertIn("Quiet place, please", message["text"])
+        self.assertIn("Art and travel", message["text"])
+        self.assertIn("No peanuts", message["text"])
 
     def test_builds_lithuanian_email(self):
         message = build_email(
-            {"language": "lt", "activity": "draughts", "preference": "second", "timing": "weekday"},
+            {"language": "lt", "activity": "citybreak", "preference": "second", "timing": "weekday"},
             self.settings,
         )
 
-        self.assertIn("Naujas Londono", message["subject"])
-        self.assertIn("Strateginio iššūkio", message["text"])
+        self.assertIn("Naujas pasimatymo", message["subject"])
+        self.assertIn("Paryžius", message["text"])
         self.assertIn("Darbo dienos vakarą", message["text"])
+
+    def test_requires_exactly_three_bounded_comment_fields(self):
+        valid_payload = {"language": "en", "activity": "drinks", "preference": "first", "timing": "weekend", "comments": ["", "", ""]}
+        self.assertEqual(validate_submission(valid_payload)["comments"], ["", "", ""])
+
+        with self.assertRaises(ValueError):
+            validate_submission({**valid_payload, "comments": ["one"]})
+        with self.assertRaises(ValueError):
+            validate_submission({**valid_payload, "comments": ["x" * 501, "", ""]})
 
     def test_rejects_unknown_choices(self):
         with self.assertRaises(ValueError):
@@ -124,11 +136,11 @@ class SurveyEmailTests(unittest.TestCase):
 
     def test_ignores_client_supplied_recipient(self):
         message = build_email(
-            {"language": "en", "activity": "bounce", "preference": "third", "timing": "flexible", "recipient": "attacker@example.com"},
+            {"language": "en", "activity": "drinks", "preference": "third", "timing": "flexible", "recipient": "attacker@example.com"},
             self.settings,
         )
 
-        self.assertEqual(message["To"], "organiser@example.com")
+        self.assertEqual(message["to"], ["organiser@example.com"])
 
     @patch.dict("os.environ", {"RESEND_API_KEY": "re_test_key", "RESEND_FROM_EMAIL": "survey@example.com", "SURVEY_TO_EMAIL": "organiser@example.com"}, clear=True)
     @patch("server.urlopen")
@@ -136,7 +148,7 @@ class SurveyEmailTests(unittest.TestCase):
         response = urlopen_mock.return_value.__enter__.return_value
         response.status = 201
 
-        send_submission({"language": "en", "activity": "bounce", "preference": "second", "timing": "weekend"})
+        send_submission({"language": "en", "activity": "badminton", "preference": "second", "timing": "weekend", "comments": ["", "", "Bring rackets"]})
 
         request = urlopen_mock.call_args.args[0]
         self.assertEqual(request.full_url, "https://api.resend.com/emails")
@@ -144,25 +156,26 @@ class SurveyEmailTests(unittest.TestCase):
         self.assertEqual(request.get_header("User-agent"), "common-ground-survey/1.0 (+https://github.com/c038644/Rasa)")
         email_payload = json.loads(request.data)
         self.assertEqual(email_payload["to"], ["organiser@example.com"])
-        self.assertIn("Bounce", email_payload["text"])
+        self.assertIn("badminton", email_payload["text"].lower())
+        self.assertIn("Bring rackets", email_payload["text"])
 
     @patch("server.send_submission")
     def test_submission_endpoint_sends_valid_choices(self, send_submission_mock):
         response = app.test_client().post(
             "/api/submissions",
-            json={"language": "en", "activity": "camden", "preference": "second", "timing": "weekend"},
+            json={"language": "en", "activity": "badminton", "preference": "second", "timing": "weekend", "comments": ["A relaxed pace", "", ""]},
         )
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json, {"status": "sent"})
         send_submission_mock.assert_called_once_with(
-            {"language": "en", "activity": "camden", "preference": "second", "timing": "weekend"}
+            {"language": "en", "activity": "badminton", "preference": "second", "timing": "weekend", "comments": ["A relaxed pace", "", ""]}
         )
 
     def test_submission_endpoint_rejects_invalid_choices(self):
         response = app.test_client().post(
             "/api/submissions",
-            json={"language": "en", "activity": "invalid", "preference": "first", "timing": "weekend"},
+            json={"language": "en", "activity": "invalid", "preference": "first", "timing": "weekend", "comments": ["", "", ""]},
         )
 
         self.assertEqual(response.status_code, 400)
@@ -173,7 +186,7 @@ class SurveyEmailTests(unittest.TestCase):
     def test_submission_endpoint_identifies_missing_resend_variable(self, _send_submission_mock):
         response = app.test_client().post(
             "/api/submissions",
-            json={"language": "en", "activity": "bounce", "preference": "first", "timing": "weekend"},
+            json={"language": "en", "activity": "drinks", "preference": "first", "timing": "weekend", "comments": ["", "", ""]},
         )
 
         self.assertEqual(response.status_code, 503)
@@ -186,7 +199,7 @@ class SurveyEmailTests(unittest.TestCase):
     def test_submission_endpoint_reports_safe_resend_diagnostic(self, _send_submission_mock):
         response = app.test_client().post(
             "/api/submissions",
-            json={"language": "en", "activity": "bounce", "preference": "first", "timing": "weekend"},
+            json={"language": "en", "activity": "drinks", "preference": "first", "timing": "weekend", "comments": ["", "", ""]},
         )
 
         self.assertEqual(response.status_code, 502)
