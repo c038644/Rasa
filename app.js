@@ -58,7 +58,7 @@ const copy = {
     restart: "Start again",
     selectError: "Choose an answer to continue.",
     stepLabel: "Question",
-    firstQuestion: "What kind of first date sounds like you?",
+    firstQuestion: "What kind of first date sounds good to you?",
     firstHint: "For a personal touch I have added a Lithuanian translation option (My background research had shown Rasa to be of Lithuanian origin)",
     branches: {
       drinks: {
@@ -148,7 +148,7 @@ const copy = {
     restart: "Pradėti iš naujo",
     selectError: "Norėdami tęsti, pasirinkite atsakymą.",
     stepLabel: "Klausimas",
-    firstQuestion: "Koks pirmasis pasimatymas jums patiktų?",
+    firstQuestion: "Koks pirmasis pasimatymas tau atrodo patrauklus?",
     firstHint: "Siekdamas suteikti asmeniškumo, pridėjau lietuviško vertimo galimybę (iš anksto atliktas tyrimas parodė, kad vardas Rasa yra lietuviškos kilmės).",
     branches: {
       drinks: {
