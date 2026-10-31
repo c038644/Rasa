@@ -1,24 +1,32 @@
 const copy = {
   en: {
     languageLabel: "Language",
-    storyAlt: "London street at golden hour",
-    imageAlt: "A lively London street in the evening",
+    storyAlt: "A relaxed moment shared by a couple",
+    imageAlt: "A couple sharing a quiet moment together",
     imageCredit: "Photo: Unsplash",
-    private: "No sign-up needed",
-    storyEyebrow: "",
-    storyQuote: "",
-    storyCaption: "",
-    introEyebrow: "",
-    heading: "Welcome to the Rasa Budrikaite appreciation home page",
-    intro: "Dedicated to a truly incredible woman that I can't stop thinking about",
+    private: "No account needed",
+    storyEyebrow: "A little date planning",
+    storyQuote: "Make room for a good conversation.",
+    storyCaption: "Choose a mood. Add the details that make it yours.",
+    introEyebrow: "A thoughtful date planner · about 1 minute",
+    heading: "Plan something lovely with Rasa.",
+    intro: "Choose a date idea, then add a few personal touches before sending the plan.",
     back: "Back",
     continue: "Continue",
-    footer: "I have done some initial analysis and I see that Rasa comes from Lithuanian so I have added additional language support for a personal touch",
-    completeEyebrow: "Your London plan",
-    completeTitle: "That sounds like a good time.",
-    completeSuffix: "Here’s your idea. Check with the venue for current details before you go.",
-    recommendationEyebrow: "Your activity idea",
-    venueLink: "Visit venue website",
+    reviewDate: "Add date notes",
+    footer: "Your choices and optional notes will be emailed to the organiser.",
+    completeEyebrow: "Your date idea",
+    completeTitle: "A lovely plan is taking shape.",
+    completeSuffix: "Review your choices and add any notes before sending.",
+    recommendationEyebrow: "A date suggestion",
+    venueLink: "Explore this idea",
+    commentsTitle: "Add a few personal touches",
+    commentsHint: "All three fields are optional. Your notes will be emailed with your choices.",
+    commentOneLabel: "What helps you feel comfortable on a date?",
+    commentTwoLabel: "Any interests or conversation starters to include?",
+    commentThreeLabel: "Anything else to keep in mind?",
+    commentPlaceholder: "Add a note (optional)",
+    sendDatePlan: "Send date plan",
     emailSending: "Emailing your choices to the organiser…",
     emailSent: "Your choices have been emailed to the organiser.",
     emailFailed: "We couldn’t send your choices. Please try again.",
@@ -50,56 +58,65 @@ const copy = {
     restart: "Start again",
     selectError: "Choose an answer to continue.",
     stepLabel: "Question",
-    firstQuestion: "Which first date would you like to choose?",
-    firstHint: "Pick the idea you’d be most excited to do.",
+    firstQuestion: "What kind of first date sounds like you?",
+    firstHint: "Choose one idea and we’ll tailor the details.",
     branches: {
-      bounce: {
-        question: "What would make evening more fun?",
-        hint: "",
-        answers: ["My date to cover the bill", "Scintillating and a laugh", "To be pulled close and gently kissed"]
+      drinks: {
+        question: "What would make an after-work date feel right?",
+        hint: "Pick the pace that feels comfortable.",
+        answers: ["A relaxed drink and easy conversation", "A riverside stroll", "A little of both"]
       },
-      camden: {
-        question: "What sounds best for your sporty date?",
-        hint: "",
-        answers: ["I'm a novice, I would like to learn", "I'm already a good player bring on the competition", "It's the taking part that counts"]
+      badminton: {
+        question: "What kind of badminton date sounds fun?",
+        hint: "Keep it playful; the score is optional.",
+        answers: ["Keep it relaxed and learn together", "Friendly competition", "Winner picks the next stop"]
       },
-      draughts: {
-        question: "Skip dates one and two and go straight date three on a city break weekend away",
-        hint: "Restaurants, culture and comprising sleeping arrangements await!",
+      citybreak: {
+        question: "Which city would you choose for a weekend away?",
+        hint: "A daydream for now; plan the details together.",
         answers: ["London", "Paris", "Brussels"]
       }
     },
-    lastQuestion: "When would you like to go?",
-    lastHint: "",
+    lastQuestion: "When would you like to meet?",
+    lastHint: "Choose a time that works for you both.",
     lastAnswers: ["A weekday evening", "A weekend", "I’m flexible"],
-    firstAnswers: ["Get to knew each other after work drinks", "Play a game of badminton (singles of course)", "Peter's Wildcard Choice"],
-    summaryLabels: ["Your outing", "Your vibe", "When"],
+    firstAnswers: ["After-work drinks and a riverside stroll", "A friendly one-on-one badminton match", "Peter’s wildcard: a weekend city break"],
+    summaryLabels: ["Date idea", "Your preference", "When"],
+    cityBreakTitle: "A weekend city-break date in {city}",
     recommendations: {
-      bounce: { title: "Ping-pong at Bounce", location: "Farringdon or Old Street, London", description: "Book a table, pick up a paddle and turn a catch-up into a friendly rally. Check the venue for sessions and food options.", url: "https://www.bouncepingpong.com/" },
-      camden: { title: "A Camden Market food-and-canal wander", location: "Camden Town, London", description: "Pick a few bites from the market, browse the stalls, then stretch the outing with a walk beside Regent’s Canal.", url: "https://camdenmarket.com/" },
-      draughts: { title: "Board-game night at Draughts", location: "Waterloo or Hackney Wick, London", description: "Settle in with a board-game collection, order something to eat and let the staff help your group find a game.", url: "https://www.draughtslondon.com/" }
+      drinks: { title: "After-work drinks and a riverside stroll", location: "South Bank, London", description: "Meet for a relaxed drink, then take a walk along the Thames and let the conversation set the pace.", url: "https://www.google.com/maps/search/?api=1&query=bars+South+Bank+London" },
+      badminton: { title: "A friendly singles badminton date", location: "Find a court in London", description: "Book a court, have a playful match, and let the winner choose your next stop.", url: "https://www.google.com/maps/search/?api=1&query=badminton+courts+London" },
+      citybreak: { title: "A weekend city-break date", location: "Choose a city together", description: "Pick one neighbourhood, one shared activity, and leave room for a few spontaneous moments.", url: "https://www.google.com/maps/search/?api=1&query=weekend+city+break" }
     }
   },
   lt: {
     languageLabel: "Kalba",
-    storyAlt: "Londono gatvė vakaro šviesoje",
-    imageAlt: "Gyva Londono gatvė vakare",
+    storyAlt: "Jauki poros akimirka",
+    imageAlt: "Pora kartu leidžia ramią akimirką",
     imageCredit: "Nuotrauka: Unsplash",
-    private: "Registruotis nereikia",
-    storyEyebrow: "Praleiskite dieną Londone",
-    storyQuote: "Geri planai dar geresni, kai jais dalijatės.",
-    storyCaption: "Pasirinkite nuotaiką. Rasime jums tinkamą veiklą.",
-    introEyebrow: "Greita veiklų paieška · apie 1 min.",
-    heading: "Ką smagaus nuveikti Londone?",
-    intro: "Pasirinkite idėją, o mes padėsime suplanuoti puikią išvyką su artimaisiais.",
+    private: "Paskyros kurti nereikia",
+    storyEyebrow: "Truputis pasimatymo planavimo",
+    storyQuote: "Palikime vietos geram pokalbiui.",
+    storyCaption: "Pasirinkite nuotaiką ir pridėkite asmeniškų detalių.",
+    introEyebrow: "Pasimatymų planuoklis · apie 1 min.",
+    heading: "Suplanuokime gražų pasimatymą su Rasa.",
+    intro: "Pasirinkite pasimatymo idėją ir prieš išsiųsdami planą pridėkite kelias asmeniškas detales.",
     back: "Atgal",
     continue: "Tęsti",
-    footer: "Baigus apklausą, jūsų pasirinkimai bus išsiųsti organizatoriui el. paštu.",
-    completeEyebrow: "Jūsų planas Londone",
-    completeTitle: "Skamba kaip puiki idėja.",
-    completeSuffix: "Štai jūsų idėja. Prieš vykdami patikrinkite naujausią informaciją paslaugos teikėjo svetainėje.",
-    recommendationEyebrow: "Jums skirta veiklos idėja",
-    venueLink: "Apsilankyti svetainėje",
+    reviewDate: "Pridėti pastabų",
+    footer: "Jūsų pasirinkimai ir pastabos el. paštu bus išsiųsti organizatoriui.",
+    completeEyebrow: "Jūsų pasimatymo idėja",
+    completeTitle: "Planą jau dėliojame.",
+    completeSuffix: "Peržiūrėkite pasirinkimus ir prieš siųsdami pridėkite pastabų.",
+    recommendationEyebrow: "Pasimatymo pasiūlymas",
+    venueLink: "Peržiūrėti idėją",
+    commentsTitle: "Pridėkite kelias asmeniškas detales",
+    commentsHint: "Visi trys laukai neprivalomi. Pastabos bus išsiųstos kartu su jūsų pasirinkimais.",
+    commentOneLabel: "Kas padėtų pasimatymo metu jaustis patogiai?",
+    commentTwoLabel: "Kokios temos ar veiklos jums patinka?",
+    commentThreeLabel: "Ar yra dar kas nors, į ką reikėtų atsižvelgti?",
+    commentPlaceholder: "Pridėkite pastabą (neprivaloma)",
+    sendDatePlan: "Išsiųsti pasimatymo planą",
     emailSending: "Jūsų pasirinkimai siunčiami organizatoriui el. paštu…",
     emailSent: "Jūsų pasirinkimai išsiųsti organizatoriui el. paštu.",
     emailFailed: "Nepavyko išsiųsti pasirinkimų. Bandykite dar kartą.",
@@ -131,45 +148,46 @@ const copy = {
     restart: "Pradėti iš naujo",
     selectError: "Norėdami tęsti, pasirinkite atsakymą.",
     stepLabel: "Klausimas",
-    firstQuestion: "Kuri išvyka Londone jums patiktų?",
-    firstHint: "Pasirinkite planą, kuris labiausiai vilioja.",
+    firstQuestion: "Koks pirmasis pasimatymas jums patiktų?",
+    firstHint: "Pasirinkite idėją, o mes pritaikysime detales.",
     branches: {
-      bounce: {
-        question: "Kas žaidimų vakarą paverstų smagiausiu?",
-        hint: "Pritaikysime planą jūsų kompanijai.",
-        answers: ["Ramus žaidimas ir pokalbiai", "Draugiškos varžybos", "Maistas ir gėrimai"]
+      drinks: {
+        question: "Koks pasimatymas po darbo jums patiktų?",
+        hint: "Pasirinkite jums patogų tempą.",
+        answers: ["Ramus gėrimas ir lengvas pokalbis", "Pasivaikščiojimas palei upę", "Ir viena, ir kita"]
       },
-      camden: {
-        question: "Kas labiausiai vilioja pasivaikščiojime po Camdeną?",
-        hint: "Išvyką galite susikurti pagal savo skonį.",
-        answers: ["Paragauti kelių patiekalų", "Kartu apžiūrėti turgų", "Pasivaikščioti palei kanalą"]
+      badminton: {
+        question: "Koks badmintono pasimatymas skambėtų smagiai?",
+        hint: "Svarbiausia žaismingumas, ne rezultatas.",
+        answers: ["Ramus žaidimas ir mokymasis kartu", "Draugiškos varžybos", "Pralaimėjęs išrenka kitą vietą"]
       },
-      draughts: {
-        question: "Kokio stalo žaidimų vakaro norėtumėte?",
-        hint: "„Draughts“ rasite žaidimų ir naujokams, ir entuziastams.",
-        answers: ["Lengvų, greitai perprantamų žaidimų", "Strateginio iššūkio", "Išbandyti dar nežaistą žaidimą"]
+      citybreak: {
+        question: "Kuriame mieste norėtumėte praleisti savaitgalį?",
+        hint: "Kol kas tik svajonė; planą galėsite kurti kartu.",
+        answers: ["Londone", "Paryžiuje", "Briuselyje"]
       }
     },
-    lastQuestion: "Kada norėtumėte apsilankyti?",
-    lastHint: "Pasirinkite laiką, tinkantį jūsų kompanijai.",
+    lastQuestion: "Kada norėtumėte susitikti?",
+    lastHint: "Pasirinkite laiką, tinkantį jums abiem.",
     lastAnswers: ["Darbo dienos vakarą", "Savaitgalį", "Laikas nėra svarbus"],
-    firstAnswers: ["Stalo tenisas ir žaidimai „Bounce“", "Maistas, turgus ir kanalas Camden turguje", "Stalo žaidimai „Draughts“"],
-    summaryLabels: ["Jūsų išvyka", "Jūsų nuotaika", "Kada"],
+    firstAnswers: ["Gėrimai po darbo ir pasivaikščiojimas palei upę", "Draugiškas badmintono mačas vienas prieš vieną", "Peterio staigmena: savaitgalio išvyka į kitą miestą"],
+    summaryLabels: ["Pasimatymo idėja", "Jūsų pageidavimai", "Kada"],
+    cityBreakTitle: "Savaitgalio pasimatymas mieste: {city}",
     recommendations: {
-      bounce: { title: "Stalo tenisas „Bounce“ klube", location: "Farringdon arba Old Street, Londonas", description: "Rezervuokite stalą, čiupkite raketę ir paverskite susitikimą draugiškomis varžybomis. Dėl seansų ir maisto pasirinkimų teiraukitės vietos.", url: "https://www.bouncepingpong.com/" },
-      camden: { title: "Maisto ir pasivaikščiojimo prie kanalo išvyka Camden turguje", location: "Camden Town, Londonas", description: "Paragaukite kelių patiekalų turguje, apžiūrėkite prekystalius, o tada pasivaikščiokite palei Regent kanalą.", url: "https://camdenmarket.com/" },
-      draughts: { title: "Stalo žaidimų vakaras „Draughts“ klube", location: "Waterloo arba Hackney Wick, Londonas", description: "Rinkitės iš daugybės stalo žaidimų, užsisakykite užkandžių ir paprašykite darbuotojų padėti išsirinkti žaidimą.", url: "https://www.draughtslondon.com/" }
+      drinks: { title: "Gėrimai po darbo ir pasivaikščiojimas palei upę", location: "South Bank, Londonas", description: "Susitikite jaukiam gėrimui, o tada pasivaikščiokite palei Temzę ir leiskite pokalbiui pakrypti savaime.", url: "https://www.google.com/maps/search/?api=1&query=bars+South+Bank+London" },
+      badminton: { title: "Draugiškas badmintono mačas vienetais", location: "Pasirinkite aikštelę Londone", description: "Rezervuokite aikštelę, pažaiskite smagų mačą, o nugalėtojas tegul išrenka kitą sustojimą.", url: "https://www.google.com/maps/search/?api=1&query=badminton+courts+London" },
+      citybreak: { title: "Savaitgalio pasimatymas kitame mieste", location: "Pasirinkite miestą kartu", description: "Išsirinkite vieną rajoną, vieną bendrą veiklą ir palikite vietos spontaniškoms akimirkoms.", url: "https://www.google.com/maps/search/?api=1&query=weekend+city+break" }
     }
   }
 };
 
 const paths = {
-  bounce: 0,
-  camden: 1,
-  draughts: 2
+  drinks: 0,
+  badminton: 1,
+  citybreak: 2
 };
 
-const state = { language: "en", step: 0, answers: [], emailStatus: "idle", emailFailureKey: null, emailFailureStatus: null, emailFailureVariables: [], emailProviderStatus: null, emailProviderError: null, emailProviderMessage: null };
+const state = { language: "en", step: 0, answers: [], comments: ["", "", ""], emailStatus: "idle", emailFailureKey: null, emailFailureStatus: null, emailFailureVariables: [], emailProviderStatus: null, emailProviderError: null, emailProviderMessage: null };
 const apiBaseUrl = document.querySelector('meta[name="survey-api-base-url"]').content.trim().replace(/\/$/, "");
 const form = document.querySelector("#survey-form");
 const answerList = document.querySelector("#answer-list");
@@ -185,7 +203,7 @@ function currentCopy() {
 function renderStaticCopy() {
   const languageCopy = currentCopy();
   document.documentElement.lang = state.language;
-  document.title = state.language === "lt" ? "Bendra kryptis | Kitas žingsnis" : "Common Ground | Find your next step";
+  document.title = state.language === "lt" ? "Bendra kryptis | Pasimatymų planuoklis" : "Common Ground | Date planner";
   document.querySelector(".language-switch").setAttribute("aria-label", languageCopy.languageLabel);
   document.querySelector(".story-panel").setAttribute("aria-label", languageCopy.storyAlt);
   document.querySelector(".story-panel img").alt = languageCopy.imageAlt;
@@ -193,6 +211,10 @@ function renderStaticCopy() {
   document.querySelectorAll("[data-copy]").forEach((element) => {
     const value = languageCopy[element.dataset.copy];
     if (typeof value === "string") element.textContent = value;
+  });
+  document.querySelectorAll("[data-copy-placeholder]").forEach((element) => {
+    const value = languageCopy[element.dataset.copyPlaceholder];
+    if (typeof value === "string") element.placeholder = value;
   });
   document.querySelectorAll("[data-language]").forEach((button) => {
     const active = button.dataset.language === state.language;
@@ -207,7 +229,7 @@ function renderStaticCopy() {
 function questionForStep(step) {
   const languageCopy = currentCopy();
   if (step === 0) {
-    return { title: languageCopy.firstQuestion, hint: languageCopy.firstHint, answers: languageCopy.firstAnswers, keys: ["bounce", "camden", "draughts"] };
+    return { title: languageCopy.firstQuestion, hint: languageCopy.firstHint, answers: languageCopy.firstAnswers, keys: ["drinks", "badminton", "citybreak"] };
   }
   const branchKey = state.answers[0]?.key;
   const branch = languageCopy.branches[branchKey];
@@ -252,7 +274,7 @@ function renderQuestion() {
   progress.setAttribute("aria-valuenow", String(state.step + 1));
   progress.querySelector(".progress-fill").style.width = `${((state.step + 1) / 3) * 100}%`;
   document.querySelector("#back-button").disabled = state.step === 0;
-  document.querySelector("#continue-button span").textContent = state.step === 2 ? (state.language === "lt" ? "Peržiūrėti" : "See summary") : languageCopy.continue;
+  document.querySelector("#continue-button span").textContent = state.step === 2 ? languageCopy.reviewDate : languageCopy.continue;
   errorMessage.hidden = true;
 }
 
@@ -271,11 +293,23 @@ function answerForStep(step) {
 function renderCompletion() {
   const languageCopy = currentCopy();
   document.querySelector("#completion-copy").textContent = languageCopy.completeSuffix;
-  const recommendation = languageCopy.recommendations[state.answers[0].key];
+  const activityKey = state.answers[0].key;
+  const recommendation = { ...languageCopy.recommendations[activityKey] };
+  if (activityKey === "citybreak") {
+    const cityIndex = ["first", "second", "third"].indexOf(state.answers[1].key);
+    const city = languageCopy.branches.citybreak.answers[cityIndex];
+    recommendation.title = languageCopy.cityBreakTitle.replace("{city}", city);
+    recommendation.location = city;
+    recommendation.url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(city)}`;
+  }
   document.querySelector("#recommendation-title").textContent = recommendation.title;
   document.querySelector("#recommendation-location").textContent = recommendation.location;
   document.querySelector("#recommendation-description").textContent = recommendation.description;
   document.querySelector("#recommendation-link").href = recommendation.url;
+  document.querySelectorAll("[data-comment-index]").forEach((field) => {
+    const index = Number(field.dataset.commentIndex);
+    field.value = state.comments[index] || "";
+  });
   renderEmailStatus();
   const summary = document.querySelector("#answer-summary");
   summary.replaceChildren();
@@ -323,6 +357,8 @@ function renderEmailStatus() {
   };
   document.querySelector("#email-status").textContent = statusText[state.emailStatus];
   document.querySelector("#email-retry").hidden = state.emailStatus !== "failed";
+  document.querySelector("#send-survey-button").hidden = state.emailStatus === "failed" || state.emailStatus === "sent";
+  document.querySelector("#send-survey-button").disabled = state.emailStatus === "sending";
 }
 
 async function sendSurveyEmail() {
@@ -349,7 +385,8 @@ async function sendSurveyEmail() {
         language: state.language,
         activity: state.answers[0].key,
         preference: state.answers[1].key,
-        timing: state.answers[2].key
+        timing: state.answers[2].key,
+        comments: state.comments
       })
     });
     if (!response.ok) {
@@ -423,7 +460,6 @@ form.addEventListener("submit", (event) => {
   if (state.step === 2) {
     state.step = 3;
     renderCompletion();
-    sendSurveyEmail();
   } else {
     state.step += 1;
     renderQuestion();
@@ -440,6 +476,7 @@ document.querySelector("#back-button").addEventListener("click", () => {
 document.querySelector("#restart-button").addEventListener("click", () => {
   state.step = 0;
   state.answers = [];
+  state.comments = ["", "", ""];
   state.emailStatus = "idle";
   state.emailFailureKey = null;
   state.emailFailureStatus = null;
@@ -451,6 +488,13 @@ document.querySelector("#restart-button").addEventListener("click", () => {
 });
 
 document.querySelector("#email-retry").addEventListener("click", sendSurveyEmail);
+document.querySelector("#send-survey-button").addEventListener("click", sendSurveyEmail);
+
+document.querySelectorAll("[data-comment-index]").forEach((field) => {
+  field.addEventListener("input", () => {
+    state.comments[Number(field.dataset.commentIndex)] = field.value;
+  });
+});
 
 document.querySelectorAll("[data-language]").forEach((button) => {
   button.addEventListener("click", () => {
