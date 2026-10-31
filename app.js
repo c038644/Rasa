@@ -5,12 +5,12 @@ const copy = {
     imageAlt: "A couple sharing a quiet moment together",
     imageCredit: "Photo: Unsplash",
     private: "No account needed",
-    storyEyebrow: "A little date planning",
-    storyQuote: "Make room for a good conversation.",
-    storyCaption: "Choose a mood. Add the details that make it yours.",
+    storyEyebrow: "",
+    storyQuote: "A website dedicated to the most beautiful woman I ever met",
+    storyCaption: "",
     introEyebrow: "A thoughtful date planner · about 1 minute",
-    heading: "Plan something lovely with Rasa.",
-    intro: "Choose a date idea, then add a few personal touches before sending the plan.",
+    heading: "Rasa, will you do me the honor of spending some time in my company?",
+    intro: "Peter would love to spend some time time you, please choose the date idea that appeals to you the most",
     back: "Back",
     continue: "Continue",
     reviewDate: "Add date notes",
@@ -59,12 +59,12 @@ const copy = {
     selectError: "Choose an answer to continue.",
     stepLabel: "Question",
     firstQuestion: "What kind of first date sounds like you?",
-    firstHint: "Choose one idea and we’ll tailor the details.",
+    firstHint: "For a personal touch I have added a Lithuanian translation option (My background research had shown Rasa to be of Lithuanian origin)",
     branches: {
       drinks: {
         question: "What would make an after-work date feel right?",
         hint: "Pick the pace that feels comfortable.",
-        answers: ["A relaxed drink and easy conversation", "A riverside stroll", "A little of both"]
+        answers: ["A relaxed drink and easy conversation", "A riverside stroll", "To be pulled in close and kissed"]
       },
       badminton: {
         question: "What kind of badminton date sounds fun?",
@@ -73,7 +73,7 @@ const copy = {
       },
       citybreak: {
         question: "Which city would you choose for a weekend away?",
-        hint: "A daydream for now; plan the details together.",
+        hint: "Culture, museums, restaurants and compromising sleeping arrangements!",
         answers: ["London", "Paris", "Brussels"]
       }
     },
@@ -95,12 +95,12 @@ const copy = {
     imageAlt: "Pora kartu leidžia ramią akimirką",
     imageCredit: "Nuotrauka: Unsplash",
     private: "Paskyros kurti nereikia",
-    storyEyebrow: "Truputis pasimatymo planavimo",
-    storyQuote: "Palikime vietos geram pokalbiui.",
-    storyCaption: "Pasirinkite nuotaiką ir pridėkite asmeniškų detalių.",
+    storyEyebrow: "",
+    storyQuote: "Svetainė, skirta gražiausiai moteriai, kokią tik esu sutikęs",
+    storyCaption: "",
     introEyebrow: "Pasimatymų planuoklis · apie 1 min.",
-    heading: "Suplanuokime gražų pasimatymą su Rasa.",
-    intro: "Pasirinkite pasimatymo idėją ir prieš išsiųsdami planą pridėkite kelias asmeniškas detales.",
+    heading: "Rasa, ar suteiktum man garbės praleisti šiek tiek laiko mano draugijoje?",
+    intro: "Peteris labai norėtų praleisti šiek tiek laiko su tavimi – prašau, išsirink pasimatymo idėją, kuri tau labiausiai patinka.",
     back: "Atgal",
     continue: "Tęsti",
     reviewDate: "Pridėti pastabų",
@@ -143,18 +143,18 @@ const copy = {
     emailProviderMessage: "Resend informacija: {message}",
     emailBadSubmission: "API atmetė šiuos pasirinkimus. Patikrinkite, ar GitHub Pages ir Render naudoja suderintas programos versijas.",
     emailApiUnreachable: "Nepavyko pasiekti el. pašto API. Patikrinkite Render adresą ir CORS nustatymus.",
-    emailHttpError: "El. pašto API grąžino HTTP {status} klaidą. Patikrinkite Render žurnalus.",
+    emailHttpError: "El. pašto API grąžino TTP {status} klaidą. Patikrinkite Render žurnalus.",
     emailRetry: "Siųsti dar kartą",
     restart: "Pradėti iš naujo",
     selectError: "Norėdami tęsti, pasirinkite atsakymą.",
     stepLabel: "Klausimas",
     firstQuestion: "Koks pirmasis pasimatymas jums patiktų?",
-    firstHint: "Pasirinkite idėją, o mes pritaikysime detales.",
+    firstHint: "Siekdamas suteikti asmeniškumo, pridėjau lietuviško vertimo galimybę (iš anksto atliktas tyrimas parodė, kad vardas Rasa yra lietuviškos kilmės).",
     branches: {
       drinks: {
         question: "Koks pasimatymas po darbo jums patiktų?",
         hint: "Pasirinkite jums patogų tempą.",
-        answers: ["Ramus gėrimas ir lengvas pokalbis", "Pasivaikščiojimas palei upę", "Ir viena, ir kita"]
+        answers: ["Ramus gėrimas ir lengvas pokalbis", "Pasivaikščiojimas palei upę", "Būti pritrauktai arčiau ir pabučiuotai"]
       },
       badminton: {
         question: "Koks badmintono pasimatymas skambėtų smagiai?",
@@ -163,7 +163,7 @@ const copy = {
       },
       citybreak: {
         question: "Kuriame mieste norėtumėte praleisti savaitgalį?",
-        hint: "Kol kas tik svajonė; planą galėsite kurti kartu.",
+        hint: "Kultūra, muziejai, restoranai ir kompromisų reikalaujančios nakvynės sąlygos!",
         answers: ["Londone", "Paryžiuje", "Briuselyje"]
       }
     },
