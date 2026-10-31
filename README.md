@@ -1,6 +1,6 @@
 # Common Ground Survey
 
-A bilingual (English and Lithuanian) London social-activity survey. The Flask API accepts completed choices and sends them to the organiser through Resend's HTTPS API. It can serve the static files for local preview or run behind Gunicorn on Render.
+A bilingual (English and Lithuanian) London date planner. It collects three date choices and three optional notes, then emails the completed plan to the organiser through Resend's HTTPS API. The Flask API can serve the static files for local preview or run behind Gunicorn on Render.
 
 ## Run locally
 
