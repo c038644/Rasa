@@ -4,9 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#f4f2ec" />
-    <meta name="description" content="Find a fun social activity in London." />
+    <meta name="description" content="Plan a thoughtful date in London with a few personal touches." />
     <meta name="survey-api-base-url" content="https://rasa-9y84.onrender.com" />
-    <title>Common Ground | London plans</title>
+    <title>Common Ground | Date planner</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -15,7 +15,7 @@
   </head>
   <body>
     <header class="topbar">
-      <a class="wordmark" href="#home" aria-label="Common Ground home">
+      <a class="wordmark" href="#home" aria-label="Common Ground date planner">
         <span class="mark" aria-hidden="true"><span></span><span></span><span></span></span>
         <span>common<span class="wordmark-light">ground</span></span>
       </a>
@@ -30,8 +30,8 @@
     </header>
 
     <main class="page-shell" id="home">
-      <aside class="story-panel" aria-label="A quiet path through the forest">
-        <img src="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1400&q=85" alt="A sunlit path winding through a green forest" />
+      <aside class="story-panel" aria-label="A relaxed date together">
+        <img src="https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=1400&q=85" alt="A couple sharing a quiet moment together" />
         <div class="story-wash"></div>
         <div class="story-content">
           <p class="eyebrow" data-copy="storyEyebrow"></p>
@@ -84,6 +84,16 @@
             <h2 data-copy="completeTitle"></h2>
             <p id="completion-copy" class="completion-copy"></p>
             <div id="answer-summary" class="answer-summary"></div>
+            <fieldset class="comments-fieldset">
+              <legend data-copy="commentsTitle"></legend>
+              <p class="comments-hint" data-copy="commentsHint"></p>
+              <label for="comment-one" data-copy="commentOneLabel"></label>
+              <textarea id="comment-one" class="comment-field" data-comment-index="0" rows="2" maxlength="500" data-copy-placeholder="commentPlaceholder"></textarea>
+              <label for="comment-two" data-copy="commentTwoLabel"></label>
+              <textarea id="comment-two" class="comment-field" data-comment-index="1" rows="2" maxlength="500" data-copy-placeholder="commentPlaceholder"></textarea>
+              <label for="comment-three" data-copy="commentThreeLabel"></label>
+              <textarea id="comment-three" class="comment-field" data-comment-index="2" rows="2" maxlength="500" data-copy-placeholder="commentPlaceholder"></textarea>
+            </fieldset>
             <article class="recommendation">
               <p class="eyebrow" data-copy="recommendationEyebrow"></p>
               <h3 id="recommendation-title"></h3>
@@ -95,6 +105,10 @@
               </a>
             </article>
             <p id="email-status" class="email-status" role="status" aria-live="polite"></p>
+            <button id="send-survey-button" class="continue-button send-survey-button" type="button">
+              <span data-copy="sendDatePlan"></span>
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 10h13m-5-5 5 5-5 5" /></svg>
+            </button>
             <button id="email-retry" class="email-retry" type="button" hidden>
               <span data-copy="emailRetry"></span>
             </button>
