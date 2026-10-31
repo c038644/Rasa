@@ -64,7 +64,7 @@ const copy = {
       drinks: {
         question: "What would make an after-work date feel right?",
         hint: "Pick the pace that feels comfortable.",
-        answers: ["A relaxed drink and easy conversation", "To get to know Peter", "To be pulled in close and kissed"]
+        answers: ["A relaxed drink and easy conversation", "To have the opportunity to get to know Peter better", "To be pulled in close and kissed"]
       },
       badminton: {
         question: "What kind of badminton date sounds fun?",
@@ -154,7 +154,7 @@ const copy = {
       drinks: {
         question: "Koks pasimatymas po darbo jums patiktų?",
         hint: "Pasirinkite jums patogų tempą.",
-        answers: ["Ramus gėrimas ir lengvas pokalbis", "Norint pažinti Piterį", "Būti pritrauktai arčiau ir pabučiuotai"]
+        answers: ["Ramus gėrimas ir lengvas pokalbis", "Turėti galimybę geriau pažinti Piterį", "Būti pritrauktai arčiau ir pabučiuotai"]
       },
       badminton: {
         question: "Koks badmintono pasimatymas skambėtų smagiai?",
