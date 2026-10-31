@@ -30,32 +30,32 @@ app.config["MAX_CONTENT_LENGTH"] = MAX_BODY_BYTES
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 
 ACTIVITIES = {
-    "bounce": {
-        "en": "Ping-pong and games at Bounce",
-        "lt": "Stalo tenisas ir žaidimai „Bounce“",
+    "drinks": {
+        "en": "After-work drinks and a riverside stroll",
+        "lt": "Gėrimai po darbo ir pasivaikščiojimas palei upę",
     },
-    "camden": {
-        "en": "Food, stalls and a canal walk at Camden Market",
-        "lt": "Maistas, turgus ir pasivaikščiojimas prie kanalo Camden turguje",
+    "badminton": {
+        "en": "A friendly singles badminton match",
+        "lt": "Draugiškas badmintono mačas vienetais",
     },
-    "draughts": {
-        "en": "Board games at Draughts",
-        "lt": "Stalo žaidimai „Draughts“ klube",
+    "citybreak": {
+        "en": "A weekend city-break date",
+        "lt": "Savaitgalio pasimatymas kitame mieste",
     },
 }
 
 PREFERENCES = {
-    "bounce": {
-        "en": ["Easygoing games and a catch-up", "A little friendly competition", "Add food and drinks"],
-        "lt": ["Ramus žaidimas ir pokalbiai", "Draugiškos varžybos", "Maistas ir gėrimai"],
+    "drinks": {
+        "en": ["A relaxed drink and easy conversation", "A riverside stroll", "A little of both"],
+        "lt": ["Ramus gėrimas ir lengvas pokalbis", "Pasivaikščiojimas palei upę", "Ir viena, ir kita"],
     },
-    "camden": {
-        "en": ["Sample a few food stalls", "Browse the market together", "Take a canal-side stroll"],
-        "lt": ["Paragauti kelių patiekalų", "Kartu apžiūrėti turgų", "Pasivaikščioti palei kanalą"],
+    "badminton": {
+        "en": ["Keep it relaxed and learn together", "Friendly competition", "Winner picks the next stop"],
+        "lt": ["Ramus žaidimas ir mokymasis kartu", "Draugiškos varžybos", "Pralaimėjęs išrenka kitą vietą"],
     },
-    "draughts": {
-        "en": ["Light, easy-to-learn games", "A strategic challenge", "Try something completely new"],
-        "lt": ["Lengvų, greitai perprantamų žaidimų", "Strateginio iššūkio", "Išbandyti dar nežaistą žaidimą"],
+    "citybreak": {
+        "en": ["London", "Paris", "Brussels"],
+        "lt": ["Londonas", "Paryžius", "Briuselis"],
     },
 }
 
@@ -79,7 +79,7 @@ class ResendSettings:
     recipient: str
 
 
-def validate_submission(payload: Any) -> dict[str, str]:
+def validate_submission(payload: Any) -> dict[str, Any]:
     if not isinstance(payload, dict):
         raise ValueError("Submission must be an object")
 
@@ -87,6 +87,7 @@ def validate_submission(payload: Any) -> dict[str, str]:
     activity = payload.get("activity")
     preference = payload.get("preference")
     timing = payload.get("timing")
+    comments = payload.get("comments", ["", "", ""])
     if language not in TIMES:
         raise ValueError("Unsupported language")
     if activity not in ACTIVITIES:
@@ -95,7 +96,17 @@ def validate_submission(payload: Any) -> dict[str, str]:
         raise ValueError("Unsupported preference")
     if timing not in TIMES[language]:
         raise ValueError("Unsupported timing")
-    return {"language": language, "activity": activity, "preference": preference, "timing": timing}
+    if not isinstance(comments, list) or len(comments) != 3:
+        raise ValueError("Three comments are required")
+    if any(not isinstance(comment, str) or len(comment) > 500 for comment in comments):
+        raise ValueError("Each comment must be text no longer than 500 characters")
+    return {
+        "language": language,
+        "activity": activity,
+        "preference": preference,
+        "timing": timing,
+        "comments": [comment.strip() for comment in comments],
+    }
 
 
 def load_resend_settings() -> ResendSettings:
@@ -122,18 +133,40 @@ def build_email(payload: Any, settings: ResendSettings) -> dict[str, Any]:
     activity = submission["activity"]
     preference_index = {"first": 0, "second": 1, "third": 2}[submission["preference"]]
     labels = {
-        "en": {"subject": "New London social activity choice", "activity": "Activity", "preference": "What they enjoy", "timing": "When", "language": "Survey language"},
-        "lt": {"subject": "Naujas Londono socialinės veiklos pasirinkimas", "activity": "Veikla", "preference": "Pageidavimai", "timing": "Kada", "language": "Apklausos kalba"},
+        "en": {
+            "subject": "A new date plan",
+            "activity": "Date idea",
+            "preference": "Preference",
+            "timing": "When",
+            "language": "Survey language",
+            "comments_heading": "Personal notes",
+            "comment_labels": ["Comfort", "Interests", "Other details"],
+        },
+        "lt": {
+            "subject": "Naujas pasimatymo planas",
+            "activity": "Pasimatymo idėja",
+            "preference": "Pageidavimai",
+            "timing": "Kada",
+            "language": "Apklausos kalba",
+            "comments_heading": "Asmeniškos pastabos",
+            "comment_labels": ["Patogumas", "Pomėgiai", "Kita informacija"],
+        },
     }[language]
-    body = "\n".join(
-        [
-            f"{labels['activity']}: {ACTIVITIES[activity][language]}",
-            f"{labels['preference']}: {PREFERENCES[activity][language][preference_index]}",
-            f"{labels['timing']}: {TIMES[language][submission['timing']]}",
-            f"{labels['language']}: {language}",
-            f"Submitted (UTC): {datetime.now(timezone.utc).isoformat(timespec='seconds')}",
-        ]
-    )
+    body_lines = [
+        f"{labels['activity']}: {ACTIVITIES[activity][language]}",
+        f"{labels['preference']}: {PREFERENCES[activity][language][preference_index]}",
+        f"{labels['timing']}: {TIMES[language][submission['timing']]}",
+        f"{labels['language']}: {language}",
+        f"Submitted (UTC): {datetime.now(timezone.utc).isoformat(timespec='seconds')}",
+    ]
+    comment_lines = [
+        f"{label}: {comment}"
+        for label, comment in zip(labels["comment_labels"], submission["comments"])
+        if comment
+    ]
+    if comment_lines:
+        body_lines.extend(["", f"{labels['comments_heading']}:", *comment_lines])
+    body = "\n".join(body_lines)
     return {
         "from": settings.sender,
         "to": [settings.recipient],
